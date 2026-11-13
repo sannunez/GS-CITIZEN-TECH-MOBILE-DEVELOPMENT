@@ -1,0 +1,145 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type PropsWithChildren,
+} from 'react';
+import { autenticar, validarSessao } from '@/services/autenticacao';
+import { ApiError } from '@/services/http';
+import type { Sessao } from '@/types/sessao';
+
+const CHAVE = '@aja/sessao';
+
+type DadosAcesso = {
+  nome?: string;
+  email: string;
+  senha: string;
+};
+
+type Auth = {
+  sessao: Sessao | null;
+  carregando: boolean;
+  erroRestauracao: boolean;
+  tentarRestaurar: () => void;
+  entrar: (modo: 'login' | 'cadastro', dados: DadosAcesso) => Promise<void>;
+  sair: () => Promise<void>;
+};
+
+const Context = createContext<Auth | null>(null);
+
+export function AuthProvider({ children }: PropsWithChildren) {
+  const [sessao, setSessao] = useState<Sessao | null>(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erroRestauracao, setErroRestauracao] = useState(false);
+  const [tentativa, setTentativa] = useState(0);
+
+  useEffect(() => {
+    let ativo = true;
+
+    async function restaurar() {
+      try {
+        const raw = await AsyncStorage.getItem(CHAVE);
+
+        if (!raw) {
+          return;
+        }
+
+        let salva: Sessao;
+
+        try {
+          salva = JSON.parse(raw);
+        } catch {
+          await AsyncStorage.removeItem(CHAVE);
+          return;
+        }
+
+        if (
+          !salva?.token ||
+          !salva.usuario?.id ||
+          !Number.isFinite(salva.expiraEm) ||
+          salva.expiraEm <= Date.now()
+        ) {
+          await AsyncStorage.removeItem(CHAVE);
+          return;
+        }
+
+        try {
+          const usuario = await validarSessao(salva.token);
+
+          if (ativo) {
+            setSessao({ ...salva, usuario });
+          }
+        } catch (error) {
+          if (error instanceof ApiError && error.status === 401) {
+            await AsyncStorage.removeItem(CHAVE);
+          } else {
+            throw error;
+          }
+        }
+      } catch {
+        if (ativo) {
+          setErroRestauracao(true);
+        }
+      } finally {
+        if (ativo) {
+          setCarregando(false);
+        }
+      }
+    }
+
+    void restaurar();
+
+    return () => {
+      ativo = false;
+    };
+  }, [tentativa]);
+
+  async function entrar(modo: 'login' | 'cadastro', dados: DadosAcesso) {
+    const nova = await autenticar(modo, dados);
+
+    await AsyncStorage.setItem(CHAVE, JSON.stringify(nova));
+
+    setSessao(nova);
+    setErroRestauracao(false);
+  }
+
+  async function sair() {
+    await AsyncStorage.removeItem(CHAVE);
+
+    setSessao(null);
+    setErroRestauracao(false);
+  }
+
+  function tentarRestaurar() {
+    setCarregando(true);
+    setErroRestauracao(false);
+    setTentativa(valor => valor + 1);
+  }
+
+  return (
+    <Context.Provider
+      value={{
+        sessao,
+        carregando,
+        erroRestauracao,
+        entrar,
+        sair,
+        tentarRestaurar,
+      }}
+    >
+      {children}
+    </Context.Provider>
+  );
+}
+
+export function useAuth() {
+  const auth = useContext(Context);
+
+  if (!auth) {
+    throw new Error('AuthProvider não encontrado.');
+  }
+
+  return auth;
+}
