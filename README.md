@@ -384,4 +384,3 @@ Capturas do protótipo em execução no emulador Android. O controle sobreposto 
 
 [Assistir ao vídeo de demonstração do AJA](https://www.youtube.com/watch?v=F-Lhitv8Dos)
 
-O vídeo de Mobile deve ter até três minutos e mostrar o aplicativo funcionando. Sugestão de roteiro: apresentar o problema e o público, entrar no app, consultar o feed, cadastrar uma denúncia usando o ViaCEP, demonstrar a persistência e mostrar as preferências de acessibilidade.
