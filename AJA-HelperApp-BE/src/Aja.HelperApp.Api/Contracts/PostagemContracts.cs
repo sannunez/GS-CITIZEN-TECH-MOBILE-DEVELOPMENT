@@ -19,4 +19,5 @@ public sealed record PostagemResponse(
     string? ImagemUrl,
     UsuarioResponse Autor,
     IReadOnlyList<TopicoResponse> Topicos,
-    DateTime CriadaEm);
+    DateTime CriadaEm
+);

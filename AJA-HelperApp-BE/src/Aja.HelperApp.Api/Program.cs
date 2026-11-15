@@ -7,14 +7,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
-
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection antes de iniciar a API.");
-
 var serverVersion = new MySqlServerVersion(Version.Parse(builder.Configuration["Database:ServerVersion"] ?? "8.0.41"));
 
 builder.Services.AddDbContext<AjaDbContext>(options =>
     options.UseMySql(connectionString, serverVersion, mysql => mysql.EnableRetryOnFailure(3)));
+
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -39,6 +38,7 @@ if (!string.IsNullOrWhiteSpace(keyDirectory))
 builder.Services.AddProblemDetails();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 builder.Services.AddCors(options => options.AddPolicy("MobileApp", policy =>
 {
     var origins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
@@ -65,6 +65,7 @@ if (app.Environment.IsDevelopment())
 await using (var scope = app.Services.CreateAsyncScope())
 {
     var database = scope.ServiceProvider.GetRequiredService<AjaDbContext>();
+
     await database.Database.MigrateAsync();
 }
 

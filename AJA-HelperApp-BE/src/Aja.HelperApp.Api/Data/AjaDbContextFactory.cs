@@ -7,20 +7,15 @@ public sealed class AjaDbContextFactory : IDesignTimeDbContextFactory<AjaDbConte
 {
     public AjaDbContext CreateDbContext(string[] args)
     {
-        var configuration = new ConfigurationBuilder()
-            .SetBasePath(AppContext.BaseDirectory)
+        var configuration = new ConfigurationBuilder().SetBasePath(AppContext.BaseDirectory)
             .AddJsonFile("appsettings.json", optional: false)
             .AddUserSecrets<AjaDbContextFactory>(optional: true)
             .AddEnvironmentVariables()
             .AddCommandLine(args)
             .Build();
-
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection.");
+        var connectionString = configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Configure ConnectionStrings:DefaultConnection.");
         var serverVersion = new MySqlServerVersion(Version.Parse(configuration["Database:ServerVersion"] ?? "8.0.41"));
 
-        return new AjaDbContext(new DbContextOptionsBuilder<AjaDbContext>()
-            .UseMySql(connectionString, serverVersion)
-            .Options);
+        return new AjaDbContext(new DbContextOptionsBuilder<AjaDbContext>().UseMySql(connectionString, serverVersion).Options);
     }
 }

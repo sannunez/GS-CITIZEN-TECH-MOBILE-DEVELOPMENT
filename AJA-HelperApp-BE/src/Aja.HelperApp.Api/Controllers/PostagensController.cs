@@ -16,28 +16,22 @@ public sealed class PostagensController(AjaDbContext database) : ControllerBase
 {
     [HttpGet("minhas")]
     [Authorize]
-    public async Task<ActionResult<IReadOnlyList<FeedPostagemResponse>>> ListarMinhas(
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<IReadOnlyList<FeedPostagemResponse>>> ListarMinhas(CancellationToken cancellationToken)
     {
         if (!long.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId))
         {
             return Unauthorized();
         }
 
-        var postagens = await PostagemFeedQuery.Criar(database, null, usuarioId)
-            .ToListAsync(cancellationToken);
+        var postagens = await PostagemFeedQuery.Criar(database, null, usuarioId).ToListAsync(cancellationToken);
 
         return Ok(postagens);
     }
 
     [HttpGet("feed")]
-    public async Task<ActionResult<PostagensFeedResponse>> Feed(
-        [FromQuery, Range(1, 3)] int limite = 3,
-        [FromQuery, Range(1, long.MaxValue)] long? antesDeId = null,
-        CancellationToken cancellationToken = default)
+    public async Task<ActionResult<PostagensFeedResponse>> Feed([FromQuery, Range(1, 3)] int limite = 3, [FromQuery, Range(1, long.MaxValue)] long? antesDeId = null, CancellationToken cancellationToken = default)
     {
-        var resultados = await PostagemFeedQuery.Criar(database, antesDeId)
-            .Take(limite + 1).ToListAsync(cancellationToken);
+        var resultados = await PostagemFeedQuery.Criar(database, antesDeId).Take(limite + 1).ToListAsync(cancellationToken);
         var itens = resultados.Take(limite).ToArray();
         var temMais = resultados.Count > limite;
 
@@ -50,8 +44,9 @@ public sealed class PostagensController(AjaDbContext database) : ControllerBase
         var postagens = await database.Postagens.AsNoTracking()
             .Include(postagem => postagem.Usuario)
             .Include(postagem => postagem.Topicos)
-                .ThenInclude(topico => topico.Usuario)
-            .OrderByDescending(postagem => postagem.CriadaEm).ThenByDescending(postagem => postagem.Id)
+            .ThenInclude(topico => topico.Usuario)
+            .OrderByDescending(postagem => postagem.CriadaEm)
+            .ThenByDescending(postagem => postagem.Id)
             .ToListAsync(cancellationToken);
 
         return Ok(postagens.Select(postagem => postagem.ToResponse()).ToArray());
@@ -63,7 +58,7 @@ public sealed class PostagensController(AjaDbContext database) : ControllerBase
         var postagem = await database.Postagens.AsNoTracking()
             .Include(postagem => postagem.Usuario)
             .Include(postagem => postagem.Topicos)
-                .ThenInclude(topico => topico.Usuario)
+            .ThenInclude(topico => topico.Usuario)
             .SingleOrDefaultAsync(postagem => postagem.Id == id, cancellationToken);
 
         return postagem is null ? NotFound() : Ok(postagem.ToResponse());
@@ -120,7 +115,8 @@ public sealed class PostagensController(AjaDbContext database) : ControllerBase
             return NotFound();
         }
 
-        if (User.FindFirstValue(ClaimTypes.NameIdentifier) != postagem.UsuarioId.ToString() || request.UsuarioId != postagem.UsuarioId)
+        if (User.FindFirstValue(ClaimTypes.NameIdentifier) != postagem.UsuarioId.ToString()
+            || request.UsuarioId != postagem.UsuarioId)
         {
             return Forbid();
         }

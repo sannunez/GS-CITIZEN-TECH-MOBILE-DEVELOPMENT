@@ -1,19 +1,39 @@
 import { useRef, useState } from 'react';
 import { router } from 'expo-router';
-import {
-  Button,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { criarPostagem } from '@/services/postagens';
 import { ApiError } from '@/services/http';
+
+const styles = StyleSheet.create({
+  tela: {
+    flex: 1,
+  },
+
+  conteudo: {
+    padding: 16,
+  },
+
+  input: {
+    borderWidth: 1,
+    padding: 12,
+    marginTop: 16,
+  },
+
+  texto: {
+    minHeight: 120,
+    textAlignVertical: 'top',
+  },
+
+  mensagem: {
+    marginTop: 16,
+  },
+
+  acoes: {
+    marginTop: 20,
+  },
+});
 
 export default function NovaPostagemScreen() {
   const { sessao, sair } = useAuth();
@@ -32,6 +52,7 @@ export default function NovaPostagemScreen() {
 
     if (!texto.trim() && !imagemUrl.trim()) {
       setErro('Informe um texto ou uma URL de imagem.');
+
       return;
     }
 
@@ -44,6 +65,7 @@ export default function NovaPostagemScreen() {
         }
       } catch {
         setErro('Informe uma URL de imagem HTTP ou HTTPS válida.');
+
         return;
       }
     }
@@ -66,12 +88,11 @@ export default function NovaPostagemScreen() {
     } catch (error) {
       if (error instanceof ApiError && error.status === 401) {
         await sair();
+
         return;
       }
 
-      const mensagem = error instanceof Error
-        ? error.message
-        : 'Não foi possível publicar.';
+      const mensagem = error instanceof Error ? error.message : 'Não foi possível publicar.';
 
       setErro(mensagem);
     } finally {
@@ -82,14 +103,8 @@ export default function NovaPostagemScreen() {
 
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={styles.tela}>
-      <KeyboardAvoidingView
-        style={styles.tela}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          keyboardShouldPersistTaps="handled"
-          contentContainerStyle={styles.conteudo}
-        >
+      <KeyboardAvoidingView style={styles.tela} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.conteudo}>
           <Text accessibilityRole="header">Publicar como {sessao?.usuario.nome}</Text>
 
           <TextInput
@@ -137,27 +152,3 @@ export default function NovaPostagemScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  tela: {
-    flex: 1,
-  },
-  conteudo: {
-    padding: 16,
-  },
-  input: {
-    borderWidth: 1,
-    padding: 12,
-    marginTop: 16,
-  },
-  texto: {
-    minHeight: 120,
-    textAlignVertical: 'top',
-  },
-  mensagem: {
-    marginTop: 16,
-  },
-  acoes: {
-    marginTop: 20,
-  },
-});

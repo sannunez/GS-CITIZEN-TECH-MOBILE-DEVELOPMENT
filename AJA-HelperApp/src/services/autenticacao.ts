@@ -1,9 +1,5 @@
-import { solicitar } from '@/services/http';
+import { ApiError, solicitar } from '@/services/http';
 import type { Sessao, UsuarioSessao } from '@/types/sessao';
-
-export function validarSessao(token: string) {
-  return solicitar<UsuarioSessao>('/api/auth/me', {}, token);
-}
 
 type DadosAcesso = {
   nome?: string;
@@ -16,17 +12,21 @@ type RespostaAcesso = {
   expiresIn: number;
 };
 
-export async function autenticar(
-  modo: 'login' | 'cadastro',
-  dados: DadosAcesso,
-): Promise<Sessao> {
-  const resposta = await solicitar<RespostaAcesso>(
-    `/api/auth/${modo}`,
-    {
-      method: 'POST',
-      body: JSON.stringify(dados),
-    },
-  );
+export function validarSessao(token: string) {
+  return solicitar<UsuarioSessao>('/api/auth/me', {}, token);
+}
+
+export async function autenticar(modo: 'login' | 'cadastro', dados: DadosAcesso): Promise<Sessao> {
+  const resposta = await solicitar<RespostaAcesso>(`/api/auth/${modo}`, {
+    method: 'POST',
+    body: JSON.stringify(dados),
+  }).catch(error => {
+    if (modo === 'login' && error instanceof ApiError && error.status === 401) {
+      throw new ApiError('E-mail ou senha incorretos. Verifique os dados e tente novamente.', 401);
+    }
+
+    throw error;
+  });
 
   const usuario = await validarSessao(resposta.accessToken);
 

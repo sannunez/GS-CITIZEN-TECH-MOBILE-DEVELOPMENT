@@ -1,22 +1,46 @@
 import { useState } from 'react';
 import { Link } from 'expo-router';
-import {
-  ActivityIndicator,
-  Button,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 
 type Props = {
   modo: 'login' | 'cadastro';
 };
+
+const styles = StyleSheet.create({
+  tela: {
+    flex: 1,
+  },
+
+  conteudo: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    padding: 16,
+  },
+
+  campos: {
+    gap: 16,
+    marginTop: 20,
+  },
+
+  input: {
+    borderWidth: 1,
+    padding: 12,
+  },
+
+  mensagem: {
+    marginTop: 16,
+  },
+
+  acoes: {
+    marginTop: 20,
+  },
+
+  link: {
+    paddingVertical: 20,
+  },
+});
 
 export default function AuthScreen({ modo }: Props) {
   const { entrar } = useAuth();
@@ -36,11 +60,21 @@ export default function AuthScreen({ modo }: Props) {
 
     if (!email.trim() || !senha || (cadastrando && !nome.trim())) {
       setErro('Preencha os campos obrigatórios.');
+
+      return;
+    }
+
+    const emailInformado = email.trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInformado)) {
+      setErro('Informe um e-mail válido. Exemplo: nome@exemplo.com.');
+
       return;
     }
 
     if (cadastrando && senha.length < 8) {
       setErro('A senha deve ter pelo menos 8 caracteres.');
+
       return;
     }
 
@@ -50,13 +84,11 @@ export default function AuthScreen({ modo }: Props) {
     try {
       await entrar(modo, {
         nome: nome.trim(),
-        email: email.trim(),
+        email: emailInformado,
         senha,
       });
     } catch (error) {
-      const mensagem = error instanceof Error
-        ? error.message
-        : 'Não foi possível entrar.';
+      const mensagem = error instanceof Error ? error.message : 'Não foi possível entrar.';
 
       setErro(mensagem);
     } finally {
@@ -67,17 +99,9 @@ export default function AuthScreen({ modo }: Props) {
 
   return (
     <SafeAreaView style={styles.tela}>
-      <KeyboardAvoidingView
-        style={styles.tela}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView
-          contentContainerStyle={styles.conteudo}
-          keyboardShouldPersistTaps="handled"
-        >
-          <Text accessibilityRole="header">
-            {cadastrando ? 'Crie sua conta no AJA' : 'Entrar no AJA'}
-          </Text>
+      <KeyboardAvoidingView style={styles.tela} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
+          <Text accessibilityRole="header">{cadastrando ? 'Crie sua conta no AJA' : 'Entrar no AJA'}</Text>
 
           <View style={styles.campos}>
             {cadastrando && (
@@ -87,7 +111,10 @@ export default function AuthScreen({ modo }: Props) {
                 accessibilityState={{ disabled: enviando }}
                 placeholder="Nome"
                 value={nome}
-                onChangeText={setNome}
+                onChangeText={valor => {
+                  setNome(valor);
+                  setErro(null);
+                }}
                 style={styles.input}
                 editable={!enviando}
                 maxLength={100}
@@ -100,7 +127,10 @@ export default function AuthScreen({ modo }: Props) {
               accessibilityState={{ disabled: enviando }}
               placeholder="E-mail"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={valor => {
+                setEmail(valor);
+                setErro(null);
+              }}
               keyboardType="email-address"
               autoCapitalize="none"
               autoCorrect={false}
@@ -111,11 +141,18 @@ export default function AuthScreen({ modo }: Props) {
 
             <TextInput
               accessibilityLabel="Senha"
-              accessibilityHint={cadastrando ? 'Crie uma senha com pelo menos oito caracteres.' : 'Informe a senha da sua conta.'}
+              accessibilityHint={
+                cadastrando
+                  ? 'Crie uma senha com pelo menos oito caracteres.'
+                  : 'Informe a senha da sua conta.'
+              }
               accessibilityState={{ disabled: enviando }}
               placeholder="Senha"
               value={senha}
-              onChangeText={setSenha}
+              onChangeText={valor => {
+                setSenha(valor);
+                setErro(null);
+              }}
               secureTextEntry
               autoCapitalize="none"
               autoCorrect={false}
@@ -152,7 +189,9 @@ export default function AuthScreen({ modo }: Props) {
           <Link
             href={cadastrando ? '/login' : '/cadastro'}
             accessibilityRole="link"
-            accessibilityLabel={cadastrando ? 'Já tenho conta. Ir para login' : 'Ainda não tenho conta. Ir para cadastro'}
+            accessibilityLabel={
+              cadastrando ? 'Já tenho conta. Ir para login' : 'Ainda não tenho conta. Ir para cadastro'
+            }
             style={styles.link}
           >
             {cadastrando ? 'Já tenho conta' : 'Ainda não tenho conta'}
@@ -162,31 +201,3 @@ export default function AuthScreen({ modo }: Props) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  tela: {
-    flex: 1,
-  },
-  conteudo: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 16,
-  },
-  campos: {
-    gap: 16,
-    marginTop: 20,
-  },
-  input: {
-    borderWidth: 1,
-    padding: 12,
-  },
-  mensagem: {
-    marginTop: 16,
-  },
-  acoes: {
-    marginTop: 20,
-  },
-  link: {
-    paddingVertical: 20,
-  },
-});

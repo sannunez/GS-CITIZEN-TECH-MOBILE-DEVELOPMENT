@@ -15,4 +15,6 @@ public sealed class Usuario
     public ICollection<Postagem> Postagens { get; set; } = new List<Postagem>();
 
     public ICollection<Topico> Topicos { get; set; } = new List<Topico>();
+
+    public ICollection<Denuncia> Denuncias { get; set; } = new List<Denuncia>();
 }

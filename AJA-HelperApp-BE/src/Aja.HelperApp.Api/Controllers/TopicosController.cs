@@ -15,9 +15,7 @@ public sealed class TopicosController(AjaDbContext database) : ControllerBase
 {
     [HttpPost("{id:long}/interesse")]
     [Authorize]
-    public async Task<ActionResult<InteresseTopicoResponse>> DemonstrarInteresse(
-        long id,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult<InteresseTopicoResponse>> DemonstrarInteresse(long id, CancellationToken cancellationToken)
     {
         if (!long.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var usuarioId)
             || !await database.Usuarios.AnyAsync(usuario => usuario.Id == usuarioId, cancellationToken))
@@ -25,19 +23,15 @@ public sealed class TopicosController(AjaDbContext database) : ControllerBase
             return Unauthorized();
         }
 
-        var alterados = await database.Topicos
-            .Where(topico => topico.Id == id)
-            .ExecuteUpdateAsync(
-                atualizacao => atualizacao.SetProperty(topico => topico.Interesses, topico => topico.Interesses + 1),
-                cancellationToken);
+        var alterados = await database.Topicos.Where(topico => topico.Id == id)
+            .ExecuteUpdateAsync(atualizacao => atualizacao.SetProperty(topico => topico.Interesses, topico => topico.Interesses + 1), cancellationToken);
 
         if (alterados == 0)
         {
             return NotFound();
         }
 
-        var interesses = await database.Topicos
-            .Where(topico => topico.Id == id)
+        var interesses = await database.Topicos.Where(topico => topico.Id == id)
             .Select(topico => topico.Interesses)
             .SingleOrDefaultAsync(cancellationToken);
 
@@ -159,6 +153,5 @@ public sealed class TopicosController(AjaDbContext database) : ControllerBase
         return NoContent();
     }
 
-    private Task<bool> PostagemExiste(long? id, CancellationToken cancellationToken) =>
-        id.HasValue ? database.Postagens.AnyAsync(postagem => postagem.Id == id.Value, cancellationToken) : Task.FromResult(true);
+    private Task<bool> PostagemExiste(long? id, CancellationToken cancellationToken) => id.HasValue ? database.Postagens.AnyAsync(postagem => postagem.Id == id.Value, cancellationToken) : Task.FromResult(true);
 }

@@ -15,8 +15,7 @@ public sealed class TopicoRequest : IValidatableObject
     [Range(1, long.MaxValue)]
     public long? PostagemId { get; init; }
 
-    public string[] NormalizarAssuntos() => (Assuntos ?? [])
-        .SelectMany(assunto => (assunto ?? string.Empty).Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
+    public string[] NormalizarAssuntos() => (Assuntos ?? []).SelectMany(assunto => (assunto ?? string.Empty).Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries))
         .Distinct(StringComparer.OrdinalIgnoreCase)
         .ToArray();
 
@@ -36,6 +35,6 @@ public sealed record TopicoResponse(
     string Titulo,
     string Texto,
     UsuarioResponse Autor,
-    int Interesses);
-
+    int Interesses
+);
 public sealed record InteresseTopicoResponse(long Id, int Interesses);

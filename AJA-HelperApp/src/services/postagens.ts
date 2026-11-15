@@ -9,19 +9,11 @@ type NovaPostagem = {
 };
 
 export function buscarMinhasPostagens(token: string, signal?: AbortSignal) {
-  return solicitar<Postagem[]>(
-    '/api/postagens/minhas',
-    { signal },
-    token,
-  );
+  return solicitar<Postagem[]>('/api/postagens/minhas', { signal }, token);
 }
 
 export function excluirPostagem(id: number, token: string) {
-  return solicitar<void>(
-    `/api/postagens/${id}`,
-    { method: 'DELETE' },
-    token,
-  );
+  return solicitar<void>(`/api/postagens/${id}`, { method: 'DELETE' }, token);
 }
 
 export function criarPostagem(dados: NovaPostagem, token: string) {
@@ -35,10 +27,7 @@ export function criarPostagem(dados: NovaPostagem, token: string) {
   );
 }
 
-export async function buscarPostagens(
-  cursor: number | null,
-  signal?: AbortSignal,
-): Promise<PaginaPostagens> {
+export async function buscarPostagens(cursor: number | null, signal?: AbortSignal): Promise<PaginaPostagens> {
   const url = new URL(`${API_URL}/api/postagens/feed`);
 
   url.searchParams.set('limite', '3');
@@ -48,6 +37,7 @@ export async function buscarPostagens(
   }
 
   const response = await fetch(url.toString(), { signal });
+
   if (!response.ok) {
     throw new Error('Não foi possível carregar as postagens. Tente novamente.');
   }

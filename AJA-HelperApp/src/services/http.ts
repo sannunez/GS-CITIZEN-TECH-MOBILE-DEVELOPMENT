@@ -1,16 +1,15 @@
 import { API_URL } from '@/config/api';
 
 export class ApiError extends Error {
-  constructor(message: string, public status: number) {
+  constructor(
+    message: string,
+    public status: number,
+  ) {
     super(message);
   }
 }
 
-export async function solicitar<T>(
-  path: string,
-  init: RequestInit = {},
-  token?: string,
-): Promise<T> {
+export async function solicitar<T>(path: string, init: RequestInit = {}, token?: string): Promise<T> {
   const headers = new Headers(init.headers);
 
   if (init.body) {
@@ -32,7 +31,7 @@ export async function solicitar<T>(
 
     throw new Error(
       `Não foi possível conectar à API em ${API_URL}. ` +
-      'Verifique se o backend está em execução e se o endereço está correto para este dispositivo.',
+        'Verifique se o backend está em execução e se o endereço está correto para este dispositivo.',
     );
   }
 

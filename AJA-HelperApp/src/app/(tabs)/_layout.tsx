@@ -8,10 +8,7 @@ export default function TabLayout() {
         options={{ title: 'Tópicos', tabBarAccessibilityLabel: 'Tópicos do bairro' }}
       />
 
-      <Tabs.Screen
-        name="feed"
-        options={{ title: 'Feed', tabBarAccessibilityLabel: 'Feed de postagens' }}
-      />
+      <Tabs.Screen name="feed" options={{ title: 'Feed', tabBarAccessibilityLabel: 'Feed de postagens' }} />
 
       <Tabs.Screen
         name="perfil"

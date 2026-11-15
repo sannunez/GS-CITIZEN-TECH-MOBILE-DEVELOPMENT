@@ -3,6 +3,25 @@ import { Stack } from 'expo-router';
 import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
 
+const styles = StyleSheet.create({
+  carregando: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+
+  recuperacao: {
+    flex: 1,
+    justifyContent: 'center',
+    padding: 16,
+    gap: 16,
+  },
+
+  acoes: {
+    gap: 16,
+    marginTop: 8,
+  },
+});
+
 export default function RootLayout() {
   return (
     <AuthProvider>
@@ -13,6 +32,7 @@ export default function RootLayout() {
 
 function Navegacao() {
   const auth = useAuth();
+
   const [erroSaida, setErroSaida] = useState<string | null>(null);
 
   async function trocarConta() {
@@ -47,15 +67,9 @@ function Navegacao() {
         )}
 
         <View style={styles.acoes}>
-          <Button
-            title="Tentar novamente"
-            onPress={auth.tentarRestaurar}
-          />
+          <Button title="Tentar novamente" onPress={auth.tentarRestaurar} />
 
-          <Button
-            title="Usar outra conta"
-            onPress={() => void trocarConta()}
-          />
+          <Button title="Usar outra conta" onPress={() => void trocarConta()} />
         </View>
       </View>
     );
@@ -72,6 +86,10 @@ function Navegacao() {
       <Stack.Protected guard={!!auth.sessao}>
         <Stack.Screen name="(tabs)" />
 
+        <Stack.Screen name="denuncias" options={{ headerShown: true, title: 'Denúncias' }} />
+
+        <Stack.Screen name="denuncia-form" options={{ headerShown: true, title: 'Denúncia' }} />
+
         <Stack.Screen
           name="nova-postagem"
           options={{
@@ -83,20 +101,3 @@ function Navegacao() {
     </Stack>
   );
 }
-
-const styles = StyleSheet.create({
-  carregando: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  recuperacao: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 16,
-    gap: 16,
-  },
-  acoes: {
-    gap: 16,
-    marginTop: 8,
-  },
-});

@@ -68,9 +68,10 @@ public sealed class UsuariosController(AjaDbContext database) : ControllerBase
         }
 
         if (await database.Postagens.AnyAsync(postagem => postagem.UsuarioId == id, cancellationToken)
-            || await database.Topicos.AnyAsync(topico => topico.UsuarioId == id, cancellationToken))
+            || await database.Topicos.AnyAsync(topico => topico.UsuarioId == id, cancellationToken)
+            || await database.Denuncias.AnyAsync(denuncia => denuncia.UsuarioId == id, cancellationToken))
         {
-            return Problem("O usuário possui postagens ou tópicos e não pode ser excluído.", statusCode: StatusCodes.Status409Conflict);
+            return Problem("O usuário possui postagens, tópicos ou denúncias e não pode ser excluído.", statusCode: StatusCodes.Status409Conflict);
         }
 
         database.Usuarios.Remove(usuario);

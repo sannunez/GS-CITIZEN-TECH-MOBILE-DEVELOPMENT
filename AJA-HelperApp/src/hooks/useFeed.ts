@@ -8,6 +8,7 @@ export function useFeed() {
   const [atualizando, setAtualizando] = useState(false);
   const [temMais, setTemMais] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+
   const cursor = useRef<number | null>(null);
   const ocupado = useRef(false);
   const terminou = useRef(false);
@@ -17,6 +18,7 @@ export function useFeed() {
   const executar = useCallback(async (reiniciar: boolean, controller: AbortController) => {
     try {
       const pagina = await buscarPostagens(cursor.current, controller.signal);
+
       if (controller.signal.aborted) {
         return;
       }
@@ -47,39 +49,45 @@ export function useFeed() {
     }
   }, []);
 
-  const carregar = useCallback(async (reiniciar = false, tentarNovamente = false) => {
-    if (!reiniciar && (ocupado.current || terminou.current || (falhou.current && !tentarNovamente))) {
-      return;
-    }
+  const carregar = useCallback(
+    async (reiniciar = false, tentarNovamente = false) => {
+      if (!reiniciar && (ocupado.current || terminou.current || (falhou.current && !tentarNovamente))) {
+        return;
+      }
 
-    if (reiniciar) {
-      requisicao.current?.abort();
-      cursor.current = null;
-      terminou.current = false;
-      setTemMais(true);
-    }
+      if (reiniciar) {
+        requisicao.current?.abort();
+        cursor.current = null;
+        terminou.current = false;
+        setTemMais(true);
+      }
 
-    const controller = new AbortController();
-    requisicao.current = controller;
-    ocupado.current = true;
-    falhou.current = false;
-    setCarregando(true);
-    setAtualizando(reiniciar);
-    setErro(null);
-    await executar(reiniciar, controller);
-  }, [executar]);
+      const controller = new AbortController();
+
+      requisicao.current = controller;
+      ocupado.current = true;
+      falhou.current = false;
+      setCarregando(true);
+      setAtualizando(reiniciar);
+      setErro(null);
+      await executar(reiniciar, controller);
+    },
+    [executar],
+  );
+
+  const atualizar = useCallback(() => void carregar(true), [carregar]);
+
+  const carregarMais = useCallback(() => void carregar(), [carregar]);
 
   useEffect(() => {
     const controller = new AbortController();
+
     requisicao.current = controller;
     ocupado.current = true;
     void executar(true, controller);
 
     return () => requisicao.current?.abort();
   }, [executar]);
-
-  const atualizar = useCallback(() => void carregar(true), [carregar]);
-  const carregarMais = useCallback(() => void carregar(), [carregar]);
 
   return {
     postagens,

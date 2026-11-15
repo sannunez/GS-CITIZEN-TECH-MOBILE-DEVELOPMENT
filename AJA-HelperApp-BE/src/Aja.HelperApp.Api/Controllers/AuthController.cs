@@ -39,7 +39,7 @@ public sealed class AuthController(AjaDbContext database, IPasswordHasher<Usuari
         {
             await database.SaveChangesAsync(cancellationToken);
         }
-        catch (DbUpdateException exception) when (exception.InnerException is MySqlException { Number: 1062 })
+        catch (DbUpdateException exception)when (exception.InnerException is MySqlException { Number: 1062 })
         {
             return Conflict(new { mensagem = "Este e-mail já está cadastrado." });
         }
@@ -90,11 +90,7 @@ public sealed class AuthController(AjaDbContext database, IPasswordHasher<Usuari
             return Unauthorized();
         }
 
-        return Ok(new SessaoUsuarioResponse(
-            usuario.Id,
-            usuario.Nome,
-            usuario.Email,
-            usuario.Biografia));
+        return Ok(new SessaoUsuarioResponse(usuario.Id, usuario.Nome, usuario.Email, usuario.Biografia));
     }
 
     private Microsoft.AspNetCore.Mvc.SignInResult EmitirToken(Usuario usuario)
@@ -104,7 +100,6 @@ public sealed class AuthController(AjaDbContext database, IPasswordHasher<Usuari
             new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
             new Claim(ClaimTypes.Name, usuario.Nome)
         };
-
         var identidade = new ClaimsIdentity(claims, BearerTokenDefaults.AuthenticationScheme);
         var principal = new ClaimsPrincipal(identidade);
 

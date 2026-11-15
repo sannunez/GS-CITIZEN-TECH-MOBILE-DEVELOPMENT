@@ -1,16 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  type PropsWithChildren,
-} from 'react';
+import { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react';
 import { autenticar, validarSessao } from '@/services/autenticacao';
 import { ApiError } from '@/services/http';
 import type { Sessao } from '@/types/sessao';
-
-const CHAVE = '@aja/sessao';
 
 type DadosAcesso = {
   nome?: string;
@@ -26,6 +18,8 @@ type Auth = {
   entrar: (modo: 'login' | 'cadastro', dados: DadosAcesso) => Promise<void>;
   sair: () => Promise<void>;
 };
+
+const CHAVE = '@aja/sessao';
 
 const Context = createContext<Auth | null>(null);
 
@@ -52,6 +46,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           salva = JSON.parse(raw);
         } catch {
           await AsyncStorage.removeItem(CHAVE);
+
           return;
         }
 
@@ -62,6 +57,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
           salva.expiraEm <= Date.now()
         ) {
           await AsyncStorage.removeItem(CHAVE);
+
           return;
         }
 

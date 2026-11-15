@@ -7,12 +7,42 @@ type Props = {
   altura: number;
 };
 
+const styles = StyleSheet.create({
+  card: {
+    borderWidth: 1,
+    marginVertical: 6,
+  },
+
+  header: {
+    padding: 6,
+    gap: 4,
+  },
+
+  imagem: {
+    flex: 1,
+    minHeight: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  foto: {
+    width: '100%',
+    height: '100%',
+  },
+
+  texto: {
+    padding: 6,
+  },
+});
+
 export default function PostagemCard({ postagem, altura }: Props) {
   const [imagemComErro, setImagemComErro] = useState<string | null>(null);
+
   const mostrarImagem = postagem.imagemUrl !== null && postagem.imagemUrl !== imagemComErro;
+  const dimensoesCard = { height: Math.max(1, altura - 12) };
 
   return (
-    <View style={[styles.card, { height: Math.max(1, altura - 12) }]}>
+    <View style={[styles.card, dimensoesCard]}>
       <View style={styles.header}>
         <Text accessibilityRole="header" accessibilityLabel={`Postagem de ${postagem.autor.nome}`}>
           {postagem.autor.nome}
@@ -47,27 +77,3 @@ export default function PostagemCard({ postagem, altura }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    marginVertical: 6,
-  },
-  header: {
-    padding: 6,
-    gap: 4,
-  },
-  imagem: {
-    flex: 1,
-    minHeight: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  foto: {
-    width: '100%',
-    height: '100%',
-  },
-  texto: {
-    padding: 6,
-  },
-});

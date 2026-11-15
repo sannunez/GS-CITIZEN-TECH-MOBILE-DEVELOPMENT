@@ -11,14 +11,54 @@ type Props = {
   onInteressar: () => void;
 };
 
-export default function TopicoCard({
-  topico,
-  curtido,
-  enviando,
-  erro,
-  onInteressar,
-}: Props) {
+const styles = StyleSheet.create({
+  card: {
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
+  },
+
+  autor: {
+    fontWeight: 'bold',
+  },
+
+  titulo: {
+    marginTop: 16,
+    fontWeight: 'bold',
+  },
+
+  texto: {
+    marginTop: 12,
+    lineHeight: 22,
+  },
+
+  lista: {
+    marginTop: 16,
+    gap: 10,
+  },
+
+  item: {
+    lineHeight: 22,
+  },
+
+  acao: {
+    marginTop: 16,
+    minHeight: 48,
+    justifyContent: 'center',
+  },
+
+  contador: {
+    marginTop: 20,
+  },
+
+  erro: {
+    marginTop: 12,
+  },
+});
+
+export default function TopicoCard({ topico, curtido, enviando, erro, onInteressar }: Props) {
   const [expandido, setExpandido] = useState(false);
+
   const itens = separarItensTopico(topico.assuntos);
   const textoLongo = topico.texto.length > 280;
   const listaLonga = itens.length > 3;
@@ -37,10 +77,7 @@ export default function TopicoCard({
 
   return (
     <View style={styles.card}>
-      <Text
-        accessibilityLabel={`Publicado por ${topico.autor.nome}`}
-        style={styles.autor}
-      >
+      <Text accessibilityLabel={`Publicado por ${topico.autor.nome}`} style={styles.autor}>
         {topico.autor.nome}
       </Text>
 
@@ -50,9 +87,7 @@ export default function TopicoCard({
 
       {topico.texto.length > 0 && (
         <Text style={styles.texto}>
-          {textoLongo && !expandido
-            ? `${topico.texto.slice(0, 280).trimEnd()}\u2026`
-            : topico.texto}
+          {textoLongo && !expandido ? `${topico.texto.slice(0, 280).trimEnd()}\u2026` : topico.texto}
         </Text>
       )}
 
@@ -104,9 +139,7 @@ export default function TopicoCard({
         onPress={onInteressar}
         style={styles.acao}
       >
-        <Text>
-          {textoInteresse}
-        </Text>
+        <Text>{textoInteresse}</Text>
       </Pressable>
 
       {erro && (
@@ -117,40 +150,3 @@ export default function TopicoCard({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 16,
-  },
-  autor: {
-    fontWeight: 'bold',
-  },
-  titulo: {
-    marginTop: 16,
-    fontWeight: 'bold',
-  },
-  texto: {
-    marginTop: 12,
-    lineHeight: 22,
-  },
-  lista: {
-    marginTop: 16,
-    gap: 10,
-  },
-  item: {
-    lineHeight: 22,
-  },
-  acao: {
-    marginTop: 16,
-    minHeight: 48,
-    justifyContent: 'center',
-  },
-  contador: {
-    marginTop: 20,
-  },
-  erro: {
-    marginTop: 12,
-  },
-});
