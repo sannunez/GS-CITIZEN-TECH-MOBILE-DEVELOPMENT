@@ -1,6 +1,8 @@
+const azulAja = '#3F7CEE';
+
 const claro = {
-  blue: '#3F7DEE',
-  primary: '#245FCB',
+  blue: azulAja,
+  primary: azulAja,
   ink: '#142238',
   muted: '#5F6E83',
   line: '#E5EBF3',
@@ -10,7 +12,7 @@ const claro = {
   green: '#16704A',
   softGreen: '#EAF7F0',
   onPrimary: '#FFFFFF',
-  brandBackground: '#245FCB',
+  brandBackground: azulAja,
   onBrand: '#FFFFFF',
   danger: '#B42318',
 };
@@ -18,8 +20,8 @@ const claro = {
 export type ThemeColors = typeof claro;
 
 const escuro: ThemeColors = {
-  blue: '#3F7DEE',
-  primary: '#A8C8FF',
+  blue: azulAja,
+  primary: azulAja,
   ink: '#F1F5FC',
   muted: '#B5C3D6',
   line: '#52647C',
@@ -29,7 +31,7 @@ const escuro: ThemeColors = {
   green: '#8EE6B9',
   softGreen: '#153C2C',
   onPrimary: '#0A1730',
-  brandBackground: '#162E54',
+  brandBackground: azulAja,
   onBrand: '#FFFFFF',
   danger: '#FFB4AB',
 };

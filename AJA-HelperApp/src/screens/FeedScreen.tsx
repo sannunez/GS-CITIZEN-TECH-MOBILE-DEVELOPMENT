@@ -45,7 +45,7 @@ const criarEstilos = (colors: ThemeColors) =>
       alignItems: 'center',
       justifyContent: 'center',
       elevation: 5,
-      boxShadow: '0 6px 20px #245FCB40',
+      boxShadow: '0 6px 20px #3F7CEE40',
     },
 
     iconePublicar: {

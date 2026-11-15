@@ -93,7 +93,7 @@ public sealed class PostagensController(AjaDbContext database) : ControllerBase
         var postagem = new Postagem
         {
             Texto = NormalizarTexto(request.Texto),
-            ImagemUrl = NormalizarTexto(request.ImagemUrl),
+            ImagemUrl = request.NormalizarImagens(),
             UsuarioId = usuario.Id,
             Usuario = usuario,
             CriadaEm = DateTime.UtcNow
@@ -134,7 +134,7 @@ public sealed class PostagensController(AjaDbContext database) : ControllerBase
         }
 
         postagem.Texto = NormalizarTexto(request.Texto);
-        postagem.ImagemUrl = NormalizarTexto(request.ImagemUrl);
+        postagem.ImagemUrl = request.NormalizarImagens();
         postagem.UsuarioId = usuario.Id;
         postagem.Usuario = usuario;
         await database.SaveChangesAsync(cancellationToken);

@@ -1,12 +1,13 @@
 import { usePreferencias } from '@/contexts/PreferenciasContext';
 import { useState } from 'react';
-import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Text } from '@/components/ui';
 import type { ThemeColors } from '@/constants/theme';
 import { useEstilos } from '@/hooks/useEstilos';
 import type { Postagem } from '@/types/postagem';
 import AutorPerfil from '@/components/AutorPerfil';
+import CarrosselImagens from '@/components/CarrosselImagens';
 
 type Props = { postagem: Postagem; altura?: number };
 
@@ -23,17 +24,6 @@ const criarEstilos = (colors: ThemeColors) =>
 
     header: {
       padding: 16,
-    },
-
-    data: {
-      color: colors.muted,
-      fontSize: 11,
-    },
-
-    foto: {
-      width: '100%',
-      aspectRatio: 1.15,
-      backgroundColor: colors.softBlue,
     },
 
     legenda: {
@@ -69,9 +59,7 @@ export default function PostagemCard({ postagem }: Props) {
   const styles = useEstilos(criarEstilos);
   const { colors } = usePreferencias();
 
-  const [imagemComErro, setImagemComErro] = useState<string | null>(null);
   const [expandido, setExpandido] = useState(false);
-  const mostrarImagem = !!postagem.imagemUrl && postagem.imagemUrl !== imagemComErro;
   const texto = postagem.texto ?? '';
 
   return (
@@ -83,15 +71,7 @@ export default function PostagemCard({ postagem }: Props) {
         />
       </View>
 
-      {mostrarImagem && (
-        <Image
-          source={{ uri: postagem.imagemUrl! }}
-          style={styles.foto}
-          resizeMode="cover"
-          accessibilityLabel={'Imagem publicada por ' + postagem.autor.nome}
-          onError={() => setImagemComErro(postagem.imagemUrl)}
-        />
-      )}
+      <CarrosselImagens imagensUrls={postagem.imagemUrl} tipo="postagem" />
 
       <View style={styles.legenda}>
         <View style={styles.selo}>
@@ -120,9 +100,6 @@ export default function PostagemCard({ postagem }: Props) {
           </Pressable>
         )}
 
-        {imagemComErro === postagem.imagemUrl && !!postagem.imagemUrl && (
-          <Text style={styles.data}>Não foi possível carregar a imagem.</Text>
-        )}
       </View>
     </View>
   );

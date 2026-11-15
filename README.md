@@ -110,8 +110,8 @@ As versões completas das dependências estão nos arquivos `package.json`, `pac
 ### Feed e postagens
 
 - Feed com paginação e atualização dos dados.
-- Cartões com autor, data, texto e imagem quando informada.
-- Formulário de nova postagem com texto e/ou URL de imagem.
+- Cartões com autor, data, texto e carrossel horizontal de imagens quando informadas.
+- Formulário de nova postagem com texto e/ou até dez URLs de imagens separadas por ponto e vírgula, com pré-visualização e opção de imagens demonstrativas.
 - Botão flutuante que abre uma gaveta com as opções Postagem e Denúncia.
 - Consulta e exclusão das próprias postagens no perfil, com confirmação antes da exclusão.
 
@@ -319,7 +319,7 @@ Os perfis demonstrativos possuem dados fictícios. As contas que já existirem e
 
 O banco inicial possui dez perfis demonstrativos, vinte postagens e sete tópicos. As biografias representam diferentes experiências de moradores e apoiadores da acessibilidade. Os perfis institucionais não possuem vínculo com os órgãos citados. Não há denúncias iniciais: elas podem ser criadas pelo formulário.
 
-As imagens do protótipo são carregadas por URLs. Nas denúncias, os links são armazenados em uma única string separada por `;`, e o frontend separa os valores para montar o carrossel. O formulário também permite inserir imagens demonstrativas.
+As imagens do protótipo são carregadas por URLs. Nas denúncias e nas postagens, os links são armazenados em uma única string separada por `;`, e o frontend separa os valores para montar o carrossel. Os formulários também permitem inserir imagens demonstrativas. Postagens antigas com uma única URL continuam sendo exibidas normalmente.
 
 Nesta versão não há upload de arquivos, captura pela câmera ou envio da galeria. As imagens de exemplo vêm do placehold.co e não comprovam uma ocorrência real. A consulta de endereço é feita ao ViaCEP; os dados de perfis, postagens e tópicos iniciais são simulados pelo próprio projeto.
 
@@ -359,7 +359,11 @@ Esses comandos verificam tipagem, regras estáticas e compilação. Para validar
 
 ## Capturas de tela
 
-Capturas do protótipo em execução no emulador Android. O controle sobreposto no canto superior direito pertence ao ambiente de desenvolvimento Expo.
+Capturas do protótipo em execução no emulador Android. O controle sobreposto com ícone de engrenagem pertence ao ambiente de desenvolvimento Expo.
+
+| Tópicos da comunidade |
+| --- |
+| <img src="docs/imagens/topicos.png" alt="Tela de tópicos com pautas da comunidade, autores e registro de interesse" width="280"> |
 
 | Login | Feed da comunidade |
 | --- | --- |

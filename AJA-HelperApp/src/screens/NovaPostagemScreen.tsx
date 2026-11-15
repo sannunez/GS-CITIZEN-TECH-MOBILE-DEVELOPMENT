@@ -8,6 +8,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { criarPostagem } from '@/services/postagens';
 import { ApiError } from '@/services/http';
+import CarrosselImagens from '@/components/CarrosselImagens';
+import { imagensDemonstracao, separarImagens, validarImagens } from '@/utils/imagens';
 
 const criarEstilos = (colors: ThemeColors) =>
   StyleSheet.create({
@@ -61,24 +63,18 @@ export default function NovaPostagemScreen() {
       return;
     }
 
-    if (!texto.trim() && !imagemUrl.trim()) {
+    if (!texto.trim() && separarImagens(imagemUrl).length === 0) {
       setErro('Informe um texto ou uma URL de imagem.');
 
       return;
     }
 
-    if (imagemUrl.trim()) {
-      try {
-        const url = new URL(imagemUrl.trim());
+    const erroImagens = validarImagens(imagemUrl);
 
-        if (!['http:', 'https:'].includes(url.protocol)) {
-          throw new Error('Protocolo inválido.');
-        }
-      } catch {
-        setErro('Informe uma URL de imagem HTTP ou HTTPS válida.');
+    if (erroImagens) {
+      setErro(erroImagens);
 
-        return;
-      }
+      return;
     }
 
     ocupado.current = true;
@@ -89,7 +85,7 @@ export default function NovaPostagemScreen() {
       await criarPostagem(
         {
           texto: texto.trim() || null,
-          imagemUrl: imagemUrl.trim() || null,
+          imagemUrl: separarImagens(imagemUrl).join(';') || null,
           usuarioId: sessao.usuario.id,
         },
         sessao.token,
@@ -134,18 +130,32 @@ export default function NovaPostagemScreen() {
           />
 
           <TextInput
-            accessibilityLabel="URL da imagem"
-            accessibilityHint="Campo opcional. Cole o endereço completo da imagem."
+            accessibilityLabel="URLs das imagens da postagem"
+            accessibilityHint="Campo opcional. Separe até dez URLs por ponto e vírgula."
             accessibilityState={{ disabled: enviando }}
-            placeholder="URL da imagem (opcional)"
+            placeholder="URLs das imagens separadas por ; (opcional)"
             value={imagemUrl}
             onChangeText={setImagemUrl}
             editable={!enviando}
             autoCapitalize="none"
             autoCorrect={false}
             keyboardType="url"
+            multiline
+            maxLength={10000}
             style={styles.input}
           />
+
+          <Text>Separe até dez URLs por ponto e vírgula (;). Use links diretos para imagens.</Text>
+
+          <Button
+            title="Usar imagens de demonstração"
+            disabled={enviando}
+            onPress={() => setImagemUrl(imagensDemonstracao.join(';'))}
+          />
+
+          {!!validarImagens(imagemUrl) && <Text accessibilityRole="alert">{validarImagens(imagemUrl)}</Text>}
+
+          {!validarImagens(imagemUrl) && <CarrosselImagens imagensUrls={imagemUrl} tipo="postagem" />}
 
           {erro && (
             <Text
