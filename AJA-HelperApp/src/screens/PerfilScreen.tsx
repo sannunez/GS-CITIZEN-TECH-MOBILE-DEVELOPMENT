@@ -3,6 +3,7 @@ import type { ThemeColors } from '@/constants/theme';
 import { useEstilos } from '@/hooks/useEstilos';
 import { usePreferencias } from '@/contexts/PreferenciasContext';
 import PreferenciasPerfil from '@/components/PreferenciasPerfil';
+import EditorBiografia from '@/components/EditorBiografia';
 import { useCallback, useRef, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, FlatList, Modal, StyleSheet, View } from 'react-native';
@@ -264,6 +265,8 @@ export default function PerfilScreen() {
 
               {!!sessao?.usuario.biografia && <Text>{sessao.usuario.biografia}</Text>}
             </View>
+
+            <EditorBiografia />
 
             <View style={styles.acoes}>
               <Button

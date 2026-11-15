@@ -87,6 +87,25 @@ public sealed class UsuariosController(AjaDbContext database) : ControllerBase
         return Ok(usuario.ToResponse());
     }
 
+    [HttpPatch("{id:long}/biografia")]
+    [Authorize]
+    public async Task<ActionResult<UsuarioResponse>> AtualizarBiografia(long id, BiografiaRequest request, CancellationToken cancellationToken)
+    {
+        if (User.FindFirstValue(ClaimTypes.NameIdentifier) != id.ToString())
+        {
+            return Forbid();
+        }
+
+        var usuario = await database.Usuarios.SingleOrDefaultAsync(usuario => usuario.Id == id, cancellationToken);
+
+        if (usuario is null) return NotFound();
+
+        usuario.Biografia = request.Biografia.Trim();
+        await database.SaveChangesAsync(cancellationToken);
+
+        return Ok(usuario.ToResponse());
+    }
+
     [HttpDelete("{id:long}")]
     [Authorize]
     public async Task<IActionResult> Excluir(long id, CancellationToken cancellationToken)

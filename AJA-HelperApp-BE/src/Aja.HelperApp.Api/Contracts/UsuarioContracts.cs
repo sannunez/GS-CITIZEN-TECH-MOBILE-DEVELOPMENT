@@ -13,3 +13,9 @@ public sealed class UsuarioRequest
 }
 
 public sealed record UsuarioResponse(long Id, string Nome, string Biografia);
+
+public sealed class BiografiaRequest
+{
+    [Required(AllowEmptyStrings = true), StringLength(1000)]
+    public string Biografia { get; init; } = string.Empty;
+}

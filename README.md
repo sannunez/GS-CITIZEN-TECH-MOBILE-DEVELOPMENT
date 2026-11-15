@@ -118,7 +118,7 @@ As versões completas das dependências estão nos arquivos `package.json`, `pac
 ### Denúncias
 
 - Cadastro, consulta, edição e exclusão de denúncias.
-- Listagem da comunidade e filtro para os registros do próprio usuário.
+- Listagem da comunidade e filtro para os registros do próprio usuário, combinável com as situações Todas, Solucionadas e Não solucionadas.
 - Consulta do CEP pelo ViaCEP e preenchimento dos campos de endereço.
 - Campos retornados pelo ViaCEP protegidos contra edição no formulário.
 - Número do imóvel informado pelo usuário, utilizando `S/N` quando necessário.
@@ -133,6 +133,7 @@ O ViaCEP não fornece o número do imóvel. CEP, logradouro, bairro, cidade, UF,
 ### Perfil e preferências
 
 - Perfil do usuário conectado, com acesso às próprias postagens e denúncias.
+- Edição da própria biografia, com até mil caracteres, gravação no banco e atualização imediata no perfil. O campo pode ser esvaziado para remover a biografia.
 - Perfis públicos com biografia, tópicos e postagens, acessíveis pelos autores no feed e nos tópicos.
 - Modo escuro.
 - Alto contraste, combinável com os temas claro e escuro.
@@ -330,6 +331,7 @@ Nesta versão não há upload de arquivos, captura pela câmera ou envio da gale
 | Autenticação | `POST /api/auth/cadastro`, `POST /api/auth/login`, `GET /api/auth/me` |
 | Usuários | `GET /api/usuarios`, `GET /api/usuarios/{id}`, `PUT /api/usuarios/{id}`, `DELETE /api/usuarios/{id}` |
 | Publicações de um usuário | `GET /api/usuarios/{id}/postagens`, `GET /api/usuarios/{id}/topicos` |
+| Própria biografia | `PATCH /api/usuarios/{id}/biografia` |
 | Postagens | `GET /api/postagens`, `GET /api/postagens/{id}`, `POST /api/postagens`, `PUT /api/postagens/{id}`, `DELETE /api/postagens/{id}` |
 | Feed e minhas postagens | `GET /api/postagens/feed`, `GET /api/postagens/minhas` |
 | Tópicos | `GET /api/topicos`, `GET /api/topicos/{id}`, `POST /api/topicos`, `PUT /api/topicos/{id}`, `DELETE /api/topicos/{id}` |
@@ -372,6 +374,10 @@ Capturas do protótipo em execução no emulador Android. O controle sobreposto 
 | Perfil público | Perfil no modo escuro |
 | --- | --- |
 | <img src="docs/imagens/perfil-publico.png" alt="Biografia e postagens de uma moradora fictícia" width="280"> | <img src="docs/imagens/modo-escuro.png" alt="Perfil com modo escuro e controles de acessibilidade" width="280"> |
+
+| Denúncias e filtros de situação | Perfil do usuário |
+| --- | --- |
+| <img src="docs/imagens/denuncias.png" alt="Listagem de denúncias com filtros de solucionadas e não solucionadas" width="280"> | <img src="docs/imagens/perfil-usuario.png" alt="Perfil do usuário com edição da biografia, acesso às denúncias e preferências" width="280"> |
 
 ## Vídeo de demonstração
 

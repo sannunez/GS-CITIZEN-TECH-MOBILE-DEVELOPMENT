@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type Props
 import { autenticar, validarSessao } from '@/services/autenticacao';
 import { ApiError } from '@/services/http';
 import type { Sessao } from '@/types/sessao';
+import { atualizarBiografia } from '@/services/usuarios';
 
 type DadosAcesso = {
   nome?: string;
@@ -19,6 +20,7 @@ type Auth = {
   tentarRestaurar: () => void;
   entrar: (modo: 'login' | 'cadastro', dados: DadosAcesso) => Promise<void>;
   sair: () => Promise<void>;
+  salvarBiografia: (biografia: string) => Promise<void>;
 };
 
 const CHAVE = '@aja/sessao';
@@ -114,6 +116,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setErroRestauracao(false);
   }
 
+  async function salvarBiografia(biografia: string) {
+    if (!sessao) throw new Error('Entre novamente para atualizar sua biografia.');
+
+    const resultado = await atualizarBiografia(sessao.usuario.id, biografia, sessao.token);
+
+    setSessao(atual => atual?.token === sessao.token ? {
+      ...atual,
+      usuario: { ...atual.usuario, biografia: resultado.biografia },
+    } : atual);
+  }
+
   function tentarRestaurar() {
     setCarregando(true);
     setErroRestauracao(false);
@@ -130,6 +143,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
         erroRestauracao,
         entrar,
         sair,
+        salvarBiografia,
         tentarRestaurar,
       }}
     >

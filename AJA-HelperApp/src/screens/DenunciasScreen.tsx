@@ -4,7 +4,7 @@ import { useEstilos } from '@/hooks/useEstilos';
 import { usePreferencias } from '@/contexts/PreferenciasContext';
 import { useCallback, useRef, useState } from 'react';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, FlatList, Modal, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { alterarSituacaoDenuncia, buscarDenuncias, excluirDenuncia } from '@/services/denuncias';
@@ -12,6 +12,12 @@ import type { Denuncia } from '@/types/denuncia';
 import CarrosselDenuncia from '@/components/CarrosselDenuncia';
 
 type Acao = { denuncia: Denuncia; tipo: 'excluir' | 'situacao' };
+
+const situacoes = [
+  { valor: 'todas', titulo: 'Todas as situações' },
+  { valor: 'solucionadas', titulo: 'Solucionadas' },
+  { valor: 'pendentes', titulo: 'Não solucionadas' },
+] as const;
 
 const criarEstilos = (colors: ThemeColors) =>
   StyleSheet.create({
@@ -50,6 +56,28 @@ const criarEstilos = (colors: ThemeColors) =>
       padding: 20,
       marginBottom: 20,
       gap: 8,
+    },
+
+    filtro: {
+      minHeight: 48,
+      maxWidth: '100%',
+      paddingVertical: 12,
+      paddingHorizontal: 16,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: colors.line,
+      backgroundColor: colors.surface,
+      justifyContent: 'center',
+    },
+
+    filtroAtivo: {
+      borderColor: colors.primary,
+      backgroundColor: colors.softBlue,
+    },
+
+    textoFiltro: {
+      color: colors.ink,
+      fontWeight: '600',
     },
 
     status: {
@@ -97,6 +125,7 @@ export default function DenunciasScreen() {
   const token = sessao?.token;
 
   const [minhas, setMinhas] = useState(filtroInicial === 'true');
+  const [situacao, setSituacao] = useState<(typeof situacoes)[number]['valor']>('todas');
   const [itens, setItens] = useState<Denuncia[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -106,6 +135,7 @@ export default function DenunciasScreen() {
 
   const requisicao = useRef<AbortController | null>(null);
   const ocupado = useRef(false);
+  const itensVisiveis = itens.filter(item => situacao === 'todas' || item.solucionado === (situacao === 'solucionadas'));
 
   const carregar = useCallback(
     async (controller: AbortController) => {
@@ -191,7 +221,7 @@ export default function DenunciasScreen() {
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={styles.tela}>
       <FlatList
-        data={itens}
+        data={itensVisiveis}
         keyExtractor={(d) => String(d.id)}
         contentContainerStyle={styles.lista}
         accessibilityElementsHidden={!!acao}
@@ -224,6 +254,25 @@ export default function DenunciasScreen() {
               />
             </View>
 
+            <Text accessibilityRole="header">Filtrar por situação</Text>
+
+            <View style={styles.botoes}>
+              {situacoes.map(opcao => (
+                <Pressable
+                  key={opcao.valor}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: situacao === opcao.valor, disabled: salvando }}
+                  disabled={salvando}
+                  onPress={() => setSituacao(opcao.valor)}
+                  style={[styles.filtro, situacao === opcao.valor && styles.filtroAtivo]}
+                >
+                  <Text style={styles.textoFiltro}>{situacao === opcao.valor ? `${opcao.titulo} · selecionado` : opcao.titulo}</Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <Text accessibilityLiveRegion="polite">{itensVisiveis.length} denúncia(s) nesta seleção.</Text>
+
             <Button
               title="Nova denúncia"
               disabled={salvando}
@@ -244,7 +293,7 @@ export default function DenunciasScreen() {
             {carregando ? (
               <ActivityIndicator accessibilityLabel="Carregando denúncias" />
             ) : (
-              !erro && <Text>Nenhuma denúncia encontrada.</Text>
+              !erro && <Text>Nenhuma denúncia encontrada para os filtros selecionados.</Text>
             )}
           </View>
         }

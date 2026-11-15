@@ -6,6 +6,13 @@ export function buscarUsuario(id: number, signal?: AbortSignal) {
   return solicitar<Autor>(`/api/usuarios/${id}`, { signal });
 }
 
+export function atualizarBiografia(id: number, biografia: string, token: string) {
+  return solicitar<Autor>(`/api/usuarios/${id}/biografia`, {
+    method: 'PATCH',
+    body: JSON.stringify({ biografia }),
+  }, token);
+}
+
 export function buscarPostagensUsuario(id: number, cursor: number | null, signal?: AbortSignal) {
   const consulta = cursor === null ? '' : `?antesDeId=${cursor}`;
 
