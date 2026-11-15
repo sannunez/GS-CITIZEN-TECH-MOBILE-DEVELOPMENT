@@ -29,7 +29,10 @@ public sealed class PostagensController(AjaDbContext database) : ControllerBase
     }
 
     [HttpGet("feed")]
-    public async Task<ActionResult<PostagensFeedResponse>> Feed([FromQuery, Range(1, 3)] int limite = 3, [FromQuery, Range(1, long.MaxValue)] long? antesDeId = null, CancellationToken cancellationToken = default)
+    public async Task<ActionResult<PostagensFeedResponse>> Feed(
+        [FromQuery, Range(1, 3)] int limite = 3,
+        [FromQuery, Range(1, long.MaxValue)] long? antesDeId = null,
+        CancellationToken cancellationToken = default)
     {
         var resultados = await PostagemFeedQuery.Criar(database, antesDeId).Take(limite + 1).ToListAsync(cancellationToken);
         var itens = resultados.Take(limite).ToArray();

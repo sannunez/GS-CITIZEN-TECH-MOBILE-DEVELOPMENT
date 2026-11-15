@@ -1,36 +1,62 @@
+import { PreferenciasProvider, usePreferencias } from '@/contexts/PreferenciasContext';
+import { Button, Text } from '@/components/ui';
 import { useState } from 'react';
 import { Stack } from 'expo-router';
-import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { AuthProvider, useAuth } from '@/contexts/AuthContext';
+import TransicaoAja from '@/components/TransicaoAja';
+import type { ThemeColors } from '@/constants/theme';
+import { useEstilos } from '@/hooks/useEstilos';
+import { StatusBar } from 'expo-status-bar';
 
-const styles = StyleSheet.create({
-  carregando: {
-    flex: 1,
-    justifyContent: 'center',
-  },
+const criarEstilos = (colors: ThemeColors) =>
+  StyleSheet.create({
+    cena: {
+      backgroundColor: colors.background,
+    },
 
-  recuperacao: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 16,
-    gap: 16,
-  },
+    tituloHeader: {
+      fontSize: 17,
+      fontWeight: '700',
+    },
 
-  acoes: {
-    gap: 16,
-    marginTop: 8,
-  },
-});
+    carregando: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+
+    recuperacao: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: 16,
+      gap: 16,
+    },
+
+    acoes: {
+      gap: 16,
+      marginTop: 8,
+    },
+  });
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <Navegacao />
-    </AuthProvider>
+    <PreferenciasProvider>
+      <AuthProvider>
+        <Navegacao />
+      </AuthProvider>
+    </PreferenciasProvider>
   );
 }
 
 function Navegacao() {
+  const styles = useEstilos(criarEstilos);
+  const {
+    colors,
+    preferencias,
+    reduzirMovimento,
+    carregando: carregandoPreferencias,
+  } = usePreferencias();
+
   const auth = useAuth();
 
   const [erroSaida, setErroSaida] = useState<string | null>(null);
@@ -45,13 +71,9 @@ function Navegacao() {
     }
   }
 
-  if (auth.carregando) {
-    return (
-      <View style={styles.carregando}>
-        <ActivityIndicator accessible accessibilityRole="progressbar" accessibilityLabel="Validando sessão" />
-      </View>
-    );
-  }
+  if (auth.carregando || carregandoPreferencias) return <TransicaoAja />;
+
+  if (auth.entrando) return <TransicaoAja onComplete={auth.concluirEntrada} />;
 
   if (auth.erroRestauracao) {
     return (
@@ -76,28 +98,47 @@ function Navegacao() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Protected guard={!auth.sessao}>
-        <Stack.Screen name="cadastro" />
+    <>
+      <StatusBar style={preferencias.modoEscuro ? 'light' : 'dark'} />
 
-        <Stack.Screen name="login" />
-      </Stack.Protected>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: styles.cena,
+          headerTintColor: colors.ink,
+          headerStyle: { backgroundColor: colors.surface },
+          headerShadowVisible: false,
+          headerTitleStyle: styles.tituloHeader,
+          animation: reduzirMovimento ? 'none' : 'default',
+        }}
+      >
+        <Stack.Protected guard={!auth.sessao}>
+          <Stack.Screen name="cadastro" />
 
-      <Stack.Protected guard={!!auth.sessao}>
-        <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="login" />
+        </Stack.Protected>
 
-        <Stack.Screen name="denuncias" options={{ headerShown: true, title: 'Denúncias' }} />
+        <Stack.Protected guard={!!auth.sessao}>
+          <Stack.Screen name="(tabs)" />
 
-        <Stack.Screen name="denuncia-form" options={{ headerShown: true, title: 'Denúncia' }} />
+          <Stack.Screen
+            name="usuario/[id]"
+            options={{ headerShown: true, title: 'Perfil da comunidade' }}
+          />
 
-        <Stack.Screen
-          name="nova-postagem"
-          options={{
-            headerShown: true,
-            title: 'Nova postagem',
-          }}
-        />
-      </Stack.Protected>
-    </Stack>
+          <Stack.Screen name="denuncias" options={{ headerShown: true, title: 'Denúncias' }} />
+
+          <Stack.Screen name="denuncia-form" options={{ headerShown: true, title: 'Denúncia' }} />
+
+          <Stack.Screen
+            name="nova-postagem"
+            options={{
+              headerShown: true,
+              title: 'Nova postagem',
+            }}
+          />
+        </Stack.Protected>
+      </Stack>
+    </>
   );
 }

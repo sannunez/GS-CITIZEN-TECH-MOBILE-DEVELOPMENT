@@ -153,5 +153,8 @@ public sealed class TopicosController(AjaDbContext database) : ControllerBase
         return NoContent();
     }
 
-    private Task<bool> PostagemExiste(long? id, CancellationToken cancellationToken) => id.HasValue ? database.Postagens.AnyAsync(postagem => postagem.Id == id.Value, cancellationToken) : Task.FromResult(true);
+    private Task<bool> PostagemExiste(long? id, CancellationToken cancellationToken) =>
+        id.HasValue
+            ? database.Postagens.AnyAsync(postagem => postagem.Id == id.Value, cancellationToken)
+            : Task.FromResult(true);
 }

@@ -1,69 +1,128 @@
+import { Text } from '@/components/ui';
+import type { ThemeColors } from '@/constants/theme';
+import { useEstilos } from '@/hooks/useEstilos';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import type { Topico } from '@/types/topico';
 import { separarItensTopico } from '@/utils/topicos';
+import AutorPerfil from '@/components/AutorPerfil';
 
 type Props = {
   topico: Topico;
-  curtido: boolean;
-  enviando: boolean;
+  curtido?: boolean;
+  enviando?: boolean;
   erro?: string;
-  onInteressar: () => void;
+  onInteressar?: () => void;
+  posicao?: number;
 };
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 16,
-  },
+const criarEstilos = (colors: ThemeColors) =>
+  StyleSheet.create({
+    card: {
+      borderWidth: 1,
+      padding: 20,
+      marginBottom: 12,
+      borderColor: colors.line,
+      backgroundColor: colors.surface,
+      borderRadius: 18,
+    },
 
-  autor: {
-    fontWeight: 'bold',
-  },
+    titulo: {
+      marginTop: 10,
+      fontWeight: '800',
+      fontSize: 19,
+      lineHeight: 26,
+      letterSpacing: -0.4,
+    },
 
-  titulo: {
-    marginTop: 16,
-    fontWeight: 'bold',
-  },
+    texto: {
+      marginTop: 10,
+      lineHeight: 21,
+      color: colors.muted,
+      fontSize: 13,
+    },
 
-  texto: {
-    marginTop: 12,
-    lineHeight: 22,
-  },
+    lista: {
+      marginTop: 12,
+      gap: 8,
+    },
 
-  lista: {
-    marginTop: 16,
-    gap: 10,
-  },
+    item: {
+      lineHeight: 22,
+      fontSize: 13,
+      color: colors.muted,
+    },
 
-  item: {
-    lineHeight: 22,
-  },
+    acao: {
+      marginTop: 0,
+      minHeight: 44,
+      justifyContent: 'center',
+      backgroundColor: colors.softBlue,
+      borderRadius: 12,
+      paddingHorizontal: 14,
+      alignItems: 'center',
+    },
 
-  acao: {
-    marginTop: 16,
-    minHeight: 48,
-    justifyContent: 'center',
-  },
+    contador: {
+      marginTop: 0,
+      color: colors.green,
+      fontWeight: '700',
+      backgroundColor: colors.softGreen,
+      padding: 10,
+      borderRadius: 10,
+      fontSize: 12,
+    },
 
-  contador: {
-    marginTop: 20,
-  },
+    engajamento: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 10,
+      marginTop: 16,
+    },
 
-  erro: {
-    marginTop: 12,
-  },
-});
+    leitura: {
+      paddingVertical: 10,
+      marginTop: 4,
+    },
 
-export default function TopicoCard({ topico, curtido, enviando, erro, onInteressar }: Props) {
+    acaoTexto: {
+      color: colors.primary,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+
+    erro: {
+      marginTop: 12,
+    },
+
+    tendencia: {
+      fontSize: 10,
+      color: colors.muted,
+      letterSpacing: 1,
+      fontWeight: '600',
+      marginBottom: 12,
+    },
+  });
+
+export default function TopicoCard({
+  topico,
+  curtido,
+  enviando,
+  erro,
+  onInteressar,
+  posicao = 1,
+}: Props) {
+  const styles = useEstilos(criarEstilos);
+
   const [expandido, setExpandido] = useState(false);
 
   const itens = separarItensTopico(topico.assuntos);
-  const textoLongo = topico.texto.length > 280;
+  const textoLongo = topico.texto.length > 140;
   const listaLonga = itens.length > 3;
-  const podeExpandir = textoLongo || listaLonga;
-  const itensVisiveis = expandido ? itens : itens.slice(0, 3);
+  const podeExpandir = textoLongo || listaLonga || itens.length > 0;
+  const itensVisiveis = expandido ? itens : [];
   const titulo = topico.titulo || 'Tópico da comunidade';
   let textoInteresse = 'Tenho interesse';
 
@@ -77,9 +136,11 @@ export default function TopicoCard({ topico, curtido, enviando, erro, onInteress
 
   return (
     <View style={styles.card}>
-      <Text accessibilityLabel={`Publicado por ${topico.autor.nome}`} style={styles.autor}>
-        {topico.autor.nome}
+      <Text style={styles.tendencia}>
+        {String(posicao).padStart(2, '0')} · EM PAUTA NA COMUNIDADE
       </Text>
+
+      <AutorPerfil autor={topico.autor} />
 
       <Text accessibilityRole="header" style={styles.titulo}>
         {titulo}
@@ -87,7 +148,9 @@ export default function TopicoCard({ topico, curtido, enviando, erro, onInteress
 
       {topico.texto.length > 0 && (
         <Text style={styles.texto}>
-          {textoLongo && !expandido ? `${topico.texto.slice(0, 280).trimEnd()}\u2026` : topico.texto}
+          {textoLongo && !expandido
+            ? `${topico.texto.slice(0, 140).trimEnd()}\u2026`
+            : topico.texto}
         </Text>
       )}
 
@@ -111,36 +174,40 @@ export default function TopicoCard({ topico, curtido, enviando, erro, onInteress
           accessibilityLabel={`${expandido ? 'Ler menos' : 'Ler mais'}: ${titulo}`}
           accessibilityHint="Expande ou recolhe o texto e os itens deste tópico."
           accessibilityState={{ expanded: expandido }}
-          onPress={() => setExpandido(atual => !atual)}
-          style={styles.acao}
+          onPress={() => setExpandido((atual) => !atual)}
+          style={styles.leitura}
         >
-          <Text>{expandido ? 'Ler menos' : 'Ler mais'}</Text>
+          <Text style={styles.acaoTexto}>{expandido ? 'Ler menos' : 'Ler mais'}</Text>
         </Pressable>
       )}
 
-      <Text
-        accessibilityLiveRegion="polite"
-        accessibilityLabel={`${topico.interesses} interesses neste tópico`}
-        style={styles.contador}
-      >
-        {topico.interesses} interesses
-      </Text>
+      <View style={styles.engajamento}>
+        <Text
+          accessibilityLiveRegion="polite"
+          accessibilityLabel={`${topico.interesses} interesses neste tópico`}
+          style={styles.contador}
+        >
+          {topico.interesses} interesses
+        </Text>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`${curtido ? 'Interesse já registrado' : 'Demonstrar interesse'}: ${titulo}`}
-        accessibilityHint="Adiciona um interesse ao contador deste tópico."
-        accessibilityState={{
-          disabled: curtido || enviando,
-          selected: curtido,
-          busy: enviando,
-        }}
-        disabled={curtido || enviando}
-        onPress={onInteressar}
-        style={styles.acao}
-      >
-        <Text>{textoInteresse}</Text>
-      </Pressable>
+        {onInteressar && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`${curtido ? 'Interesse já registrado' : 'Demonstrar interesse'}: ${titulo}`}
+            accessibilityHint="Adiciona um interesse ao contador deste tópico."
+            accessibilityState={{
+              disabled: curtido || enviando,
+              selected: curtido,
+              busy: enviando,
+            }}
+            disabled={curtido || enviando}
+            onPress={onInteressar}
+            style={styles.acao}
+          >
+            <Text style={styles.acaoTexto}>{textoInteresse}</Text>
+          </Pressable>
+        )}
+      </View>
 
       {erro && (
         <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.erro}>

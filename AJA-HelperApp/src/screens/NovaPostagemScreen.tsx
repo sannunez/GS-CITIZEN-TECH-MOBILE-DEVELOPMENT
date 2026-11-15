@@ -1,41 +1,52 @@
+import { Button, Text, TextInput } from '@/components/ui';
+import type { ThemeColors } from '@/constants/theme';
+import { useEstilos } from '@/hooks/useEstilos';
 import { useRef, useState } from 'react';
 import { router } from 'expo-router';
-import { Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { criarPostagem } from '@/services/postagens';
 import { ApiError } from '@/services/http';
 
-const styles = StyleSheet.create({
-  tela: {
-    flex: 1,
-  },
+const criarEstilos = (colors: ThemeColors) =>
+  StyleSheet.create({
+    tela: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  conteudo: {
-    padding: 16,
-  },
+    conteudo: {
+      padding: 22,
+      gap: 8,
+    },
 
-  input: {
-    borderWidth: 1,
-    padding: 12,
-    marginTop: 16,
-  },
+    input: {
+      borderWidth: 1,
+      padding: 12,
+      marginTop: 16,
+      borderColor: colors.line,
+      borderRadius: 14,
+      backgroundColor: colors.surface,
+    },
 
-  texto: {
-    minHeight: 120,
-    textAlignVertical: 'top',
-  },
+    texto: {
+      minHeight: 120,
+      textAlignVertical: 'top',
+    },
 
-  mensagem: {
-    marginTop: 16,
-  },
+    mensagem: {
+      marginTop: 16,
+    },
 
-  acoes: {
-    marginTop: 20,
-  },
-});
+    acoes: {
+      marginTop: 20,
+    },
+  });
 
 export default function NovaPostagemScreen() {
+  const styles = useEstilos(criarEstilos);
+
   const { sessao, sair } = useAuth();
 
   const [texto, setTexto] = useState('');
@@ -103,7 +114,10 @@ export default function NovaPostagemScreen() {
 
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={styles.tela}>
-      <KeyboardAvoidingView style={styles.tela} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView
+        style={styles.tela}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.conteudo}>
           <Text accessibilityRole="header">Publicar como {sessao?.usuario.nome}</Text>
 
@@ -134,7 +148,11 @@ export default function NovaPostagemScreen() {
           />
 
           {erro && (
-            <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.mensagem}>
+            <Text
+              accessibilityRole="alert"
+              accessibilityLiveRegion="polite"
+              style={styles.mensagem}
+            >
               {erro}
             </Text>
           )}

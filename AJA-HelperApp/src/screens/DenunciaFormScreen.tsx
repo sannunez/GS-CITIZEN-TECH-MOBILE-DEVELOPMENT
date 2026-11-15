@@ -1,6 +1,9 @@
+import { Button, Text, TextInput } from '@/components/ui';
+import type { ThemeColors } from '@/constants/theme';
+import { useEstilos } from '@/hooks/useEstilos';
 import { useEffect, useRef, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { obterDenuncia, salvarDenuncia } from '@/services/denuncias';
@@ -10,53 +13,62 @@ import type { EnderecoDenuncia } from '@/types/denuncia';
 import { imagensDemonstracao, separarImagens, validarImagens } from '@/utils/denuncias';
 import CarrosselDenuncia from '@/components/CarrosselDenuncia';
 
-const styles = StyleSheet.create({
-  tela: {
-    flex: 1,
-  },
+const criarEstilos = (colors: ThemeColors) =>
+  StyleSheet.create({
+    tela: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  conteudo: {
-    padding: 16,
-    gap: 12,
-  },
+    conteudo: {
+      padding: 22,
+      gap: 14,
+    },
 
-  titulo: {
-    fontSize: 22,
-    fontWeight: '600',
-  },
+    titulo: {
+      fontSize: 26,
+      fontWeight: '800',
+      letterSpacing: -0.6,
+      lineHeight: 34,
+    },
 
-  rotulo: {
-    marginTop: 8,
-    fontWeight: '600',
-  },
+    rotulo: {
+      marginTop: 8,
+      fontWeight: '700',
+      color: colors.muted,
+      fontSize: 12,
+    },
 
-  input: {
-    borderWidth: 1,
-    borderColor: '#687780',
-    borderRadius: 6,
-    padding: 12,
-    color: '#18232c',
-  },
+    input: {
+      borderWidth: 1,
+      borderColor: colors.line,
+      borderRadius: 14,
+      padding: 12,
+      color: colors.ink,
+      backgroundColor: colors.surface,
+    },
 
-  texto: {
-    minHeight: 90,
-    textAlignVertical: 'top',
-  },
+    texto: {
+      minHeight: 90,
+      textAlignVertical: 'top',
+    },
 
-  somenteLeitura: {
-    backgroundColor: '#edf1f4',
-  },
+    somenteLeitura: {
+      backgroundColor: colors.softBlue,
+    },
 
-  endereco: {
-    gap: 10,
-  },
+    endereco: {
+      gap: 10,
+    },
 
-  erro: {
-    color: '#a31818',
-  },
-});
+    erro: {
+      color: colors.danger,
+    },
+  });
 
 export default function DenunciaFormScreen() {
+  const styles = useEstilos(criarEstilos);
+
   const { id: parametroId } = useLocalSearchParams<{ id?: string }>();
   const id = parametroId ? Number(parametroId) : undefined;
   const idInvalido = id !== undefined && (!Number.isSafeInteger(id) || id <= 0);
@@ -87,10 +99,11 @@ export default function DenunciaFormScreen() {
     if (idInvalido || !id || !token) return;
 
     void obterDenuncia(id, token, controller.signal)
-      .then(d => {
+      .then((d) => {
         if (controller.signal.aborted) return;
 
-        if (d.usuarioId !== sessao?.usuario.id) throw new Error('Somente o autor pode editar esta denúncia.');
+        if (d.usuarioId !== sessao?.usuario.id)
+          throw new Error('Somente o autor pode editar esta denúncia.');
 
         setCep(d.cep);
         setEndereco(d);
@@ -99,7 +112,7 @@ export default function DenunciaFormScreen() {
         setTexto(d.texto);
         setImagens(d.imagensUrls ?? '');
       })
-      .catch(error => {
+      .catch((error) => {
         if (!controller.signal.aborted) {
           setErro(error.message);
           setErroCarga(true);
@@ -218,13 +231,18 @@ export default function DenunciaFormScreen() {
 
   return (
     <SafeAreaView edges={['left', 'right', 'bottom']} style={styles.tela}>
-      <KeyboardAvoidingView style={styles.tela} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView
+        style={styles.tela}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.conteudo}>
           <Text accessibilityRole="header" style={styles.titulo}>
             {id ? 'Editar denúncia' : 'Registrar denúncia'}
           </Text>
 
-          <Text>Informe o endereço do problema. O relato será visível às pessoas conectadas ao AJA.</Text>
+          <Text>
+            Informe o endereço do problema. O relato será visível às pessoas conectadas ao AJA.
+          </Text>
 
           {carregando && <ActivityIndicator accessibilityLabel="Carregando denúncia" />}
 
@@ -276,7 +294,8 @@ export default function DenunciaFormScreen() {
 
               {!endereco.logradouro && (
                 <Text>
-                  Este CEP não identifica uma rua específica. Detalhe o local no ponto de referência.
+                  Este CEP não identifica uma rua específica. Detalhe o local no ponto de
+                  referência.
                 </Text>
               )}
             </View>
@@ -357,7 +376,7 @@ export default function DenunciaFormScreen() {
                 setCarregando(true);
                 setErroCarga(false);
                 setErro(null);
-                setTentativa(t => t + 1);
+                setTentativa((t) => t + 1);
               }}
             />
           )}

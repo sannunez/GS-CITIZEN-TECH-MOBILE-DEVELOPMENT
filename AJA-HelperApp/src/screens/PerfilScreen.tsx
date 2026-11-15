@@ -1,73 +1,116 @@
+import { Button, Text } from '@/components/ui';
+import type { ThemeColors } from '@/constants/theme';
+import { useEstilos } from '@/hooks/useEstilos';
+import { usePreferencias } from '@/contexts/PreferenciasContext';
+import PreferenciasPerfil from '@/components/PreferenciasPerfil';
 import { useCallback, useRef, useState } from 'react';
 import { router, useFocusEffect } from 'expo-router';
-import { ActivityIndicator, Button, FlatList, Modal, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Modal, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import PostagemCard from '@/components/PostagemCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { buscarMinhasPostagens, excluirPostagem } from '@/services/postagens';
 import type { Postagem } from '@/types/postagem';
 
-const styles = StyleSheet.create({
-  tela: {
-    flex: 1,
-  },
+const criarEstilos = (colors: ThemeColors) =>
+  StyleSheet.create({
+    nomePerfil: {
+      fontSize: 23,
+      fontWeight: '800',
+      lineHeight: 30,
+      textAlign: 'center',
+    },
 
-  conteudo: {
-    padding: 16,
-  },
+    tela: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  cabecalho: {
-    marginBottom: 16,
-  },
+    conteudo: {
+      padding: 16,
+    },
 
-  dados: {
-    gap: 12,
-  },
+    cabecalho: {
+      marginBottom: 16,
+      backgroundColor: colors.surface,
+      borderRadius: 22,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: colors.line,
+    },
 
-  acoes: {
-    marginTop: 24,
-  },
+    dados: {
+      gap: 8,
+      alignItems: 'center',
+    },
 
-  titulo: {
-    marginTop: 24,
-    marginBottom: 16,
-  },
+    acoes: {
+      marginTop: 24,
+      gap: 14,
+    },
 
-  estado: {
-    paddingVertical: 16,
-  },
+    titulo: {
+      marginTop: 24,
+      marginBottom: 16,
+      fontSize: 18,
+      fontWeight: '800',
+    },
 
-  postagem: {
-    marginBottom: 24,
-  },
+    estado: {
+      paddingVertical: 16,
+    },
 
-  acaoPostagem: {
-    marginTop: 12,
-  },
+    postagem: {
+      marginBottom: 24,
+    },
 
-  fundoModal: {
-    flex: 1,
-    justifyContent: 'center',
-    padding: 24,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
+    acaoPostagem: {
+      marginTop: 12,
+    },
 
-  modal: {
-    backgroundColor: '#fff',
-    padding: 24,
-    gap: 20,
-    width: '100%',
-    maxWidth: 440,
-    alignSelf: 'center',
-  },
+    fundoModal: {
+      flex: 1,
+      justifyContent: 'center',
+      padding: 24,
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
 
-  botoesModal: {
-    gap: 16,
-    marginTop: 4,
-  },
-});
+    modal: {
+      backgroundColor: colors.surface,
+      padding: 24,
+      gap: 20,
+      width: '100%',
+      maxWidth: 440,
+      alignSelf: 'center',
+      borderRadius: 24,
+    },
+
+    botoesModal: {
+      gap: 16,
+      marginTop: 4,
+    },
+
+    avatar: {
+      width: 76,
+      height: 76,
+      borderRadius: 38,
+      backgroundColor: colors.softBlue,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 12,
+    },
+
+    inicial: {
+      color: colors.primary,
+      fontSize: 30,
+      fontWeight: '800',
+    },
+  });
 
 export default function PerfilScreen() {
+  const styles = useEstilos(criarEstilos);
+  const { reduzirMovimento } = usePreferencias();
+
   const { sessao, sair } = useAuth();
   const token = sessao?.token;
 
@@ -165,10 +208,11 @@ export default function PerfilScreen() {
     try {
       await excluirPostagem(id, token);
 
-      setPostagens(atuais => atuais.filter(postagem => postagem.id !== id));
+      setPostagens((atuais) => atuais.filter((postagem) => postagem.id !== id));
       setSelecionada(null);
     } catch (error) {
-      const mensagem = error instanceof Error ? error.message : 'Não foi possível excluir a postagem.';
+      const mensagem =
+        error instanceof Error ? error.message : 'Não foi possível excluir a postagem.';
 
       setErroExclusao(mensagem);
     } finally {
@@ -193,20 +237,32 @@ export default function PerfilScreen() {
         accessibilityElementsHidden={selecionada !== null}
         importantForAccessibility={selecionada ? 'no-hide-descendants' : 'auto'}
         data={postagens}
-        keyExtractor={postagem => String(postagem.id)}
+        keyExtractor={(postagem) => String(postagem.id)}
         contentContainerStyle={styles.conteudo}
         refreshing={carregando}
         onRefresh={atualizar}
         ListHeaderComponent={
           <View style={styles.cabecalho}>
             <View style={styles.dados}>
-              <Text accessibilityRole="header" accessibilityLabel={`Perfil de ${sessao?.usuario.nome}`}>
+              <View style={styles.avatar}>
+                <Text style={styles.inicial}>
+                  {sessao?.usuario.nome.trim().charAt(0).toUpperCase()}
+                </Text>
+              </View>
+
+              <Text
+                style={styles.nomePerfil}
+                accessibilityRole="header"
+                accessibilityLabel={`Perfil de ${sessao?.usuario.nome}`}
+              >
                 {sessao?.usuario.nome}
               </Text>
 
-              <Text accessibilityLabel={`E-mail: ${sessao?.usuario.email}`}>{sessao?.usuario.email}</Text>
+              <Text accessibilityLabel={`E-mail: ${sessao?.usuario.email}`}>
+                {sessao?.usuario.email}
+              </Text>
 
-              <Text>ID: {sessao?.usuario.id}</Text>
+              {!!sessao?.usuario.biografia && <Text>{sessao.usuario.biografia}</Text>}
             </View>
 
             <View style={styles.acoes}>
@@ -215,8 +271,14 @@ export default function PerfilScreen() {
                 onPress={() => router.push({ pathname: '/denuncias', params: { minhas: 'true' } })}
               />
 
-              <Button title="Sair da conta" disabled={excluindo} onPress={() => void encerrarSessao()} />
+              <Button
+                title="Sair da conta"
+                disabled={excluindo}
+                onPress={() => void encerrarSessao()}
+              />
             </View>
+
+            <PreferenciasPerfil />
 
             <Text accessibilityRole="header" style={styles.titulo}>
               Minhas postagens
@@ -259,7 +321,7 @@ export default function PerfilScreen() {
       <Modal
         visible={selecionada !== null}
         transparent
-        animationType="fade"
+        animationType={reduzirMovimento ? 'none' : 'fade'}
         onRequestClose={cancelarExclusao}
       >
         <View style={styles.fundoModal}>

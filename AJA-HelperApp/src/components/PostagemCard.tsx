@@ -1,78 +1,128 @@
+import { usePreferencias } from '@/contexts/PreferenciasContext';
 import { useState } from 'react';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { Text } from '@/components/ui';
+import type { ThemeColors } from '@/constants/theme';
+import { useEstilos } from '@/hooks/useEstilos';
 import type { Postagem } from '@/types/postagem';
+import AutorPerfil from '@/components/AutorPerfil';
 
-type Props = {
-  postagem: Postagem;
-  altura: number;
-};
+type Props = { postagem: Postagem; altura?: number };
 
-const styles = StyleSheet.create({
-  card: {
-    borderWidth: 1,
-    marginVertical: 6,
-  },
+const criarEstilos = (colors: ThemeColors) =>
+  StyleSheet.create({
+    card: {
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.line,
+      borderRadius: 20,
+      marginBottom: 18,
+      overflow: 'hidden',
+    },
 
-  header: {
-    padding: 6,
-    gap: 4,
-  },
+    header: {
+      padding: 16,
+    },
 
-  imagem: {
-    flex: 1,
-    minHeight: 0,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+    data: {
+      color: colors.muted,
+      fontSize: 11,
+    },
 
-  foto: {
-    width: '100%',
-    height: '100%',
-  },
+    foto: {
+      width: '100%',
+      aspectRatio: 1.15,
+      backgroundColor: colors.softBlue,
+    },
 
-  texto: {
-    padding: 6,
-  },
-});
+    legenda: {
+      padding: 16,
+      gap: 12,
+    },
 
-export default function PostagemCard({ postagem, altura }: Props) {
+    selo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+
+    comunidade: {
+      fontSize: 11,
+      color: colors.primary,
+      fontWeight: '700',
+    },
+
+    texto: {
+      fontSize: 14,
+      lineHeight: 22,
+    },
+
+    lerMais: {
+      color: colors.primary,
+      fontWeight: '600',
+      paddingVertical: 8,
+    },
+  });
+
+export default function PostagemCard({ postagem }: Props) {
+  const styles = useEstilos(criarEstilos);
+  const { colors } = usePreferencias();
+
   const [imagemComErro, setImagemComErro] = useState<string | null>(null);
-
-  const mostrarImagem = postagem.imagemUrl !== null && postagem.imagemUrl !== imagemComErro;
-  const dimensoesCard = { height: Math.max(1, altura - 12) };
+  const [expandido, setExpandido] = useState(false);
+  const mostrarImagem = !!postagem.imagemUrl && postagem.imagemUrl !== imagemComErro;
+  const texto = postagem.texto ?? '';
 
   return (
-    <View style={[styles.card, dimensoesCard]}>
+    <View style={styles.card}>
       <View style={styles.header}>
-        <Text accessibilityRole="header" accessibilityLabel={`Postagem de ${postagem.autor.nome}`}>
-          {postagem.autor.nome}
-        </Text>
-
-        <Text accessibilityLabel={`Publicada em ${new Date(postagem.criadaEm).toLocaleString('pt-BR')}`}>
-          {new Date(postagem.criadaEm).toLocaleString('pt-BR')}
-        </Text>
+        <AutorPerfil
+          autor={postagem.autor}
+          detalhe={new Date(postagem.criadaEm).toLocaleString('pt-BR')}
+        />
       </View>
 
-      <View style={styles.imagem}>
-        {mostrarImagem ? (
-          <Image
-            source={{ uri: postagem.imagemUrl! }}
-            style={styles.foto}
-            resizeMode="contain"
-            accessible
-            accessibilityRole="image"
-            accessibilityLabel={`Imagem publicada por ${postagem.autor.nome}`}
-            onError={() => setImagemComErro(postagem.imagemUrl)}
-          />
-        ) : (
-          <Text>{postagem.imagemUrl ? 'Imagem indisponível.' : 'Sem imagem.'}</Text>
+      {mostrarImagem && (
+        <Image
+          source={{ uri: postagem.imagemUrl! }}
+          style={styles.foto}
+          resizeMode="cover"
+          accessibilityLabel={'Imagem publicada por ' + postagem.autor.nome}
+          onError={() => setImagemComErro(postagem.imagemUrl)}
+        />
+      )}
+
+      <View style={styles.legenda}>
+        <View style={styles.selo}>
+          <Ionicons name="location-outline" size={14} color={colors.primary} />
+
+          <Text style={styles.comunidade}>VOZES DA COMUNIDADE</Text>
+        </View>
+
+        {!!texto && (
+          <Text
+            style={styles.texto}
+            numberOfLines={texto.length > 160 && !expandido ? 4 : undefined}
+            accessibilityLabel={texto}
+          >
+            {texto}
+          </Text>
         )}
-      </View>
 
-      <View style={styles.texto}>
-        <Text numberOfLines={2} accessibilityLabel={postagem.texto ?? 'Sem texto.'}>
-          {postagem.texto ?? 'Sem texto.'}
-        </Text>
+        {texto.length > 160 && (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityState={{ expanded: expandido }}
+            onPress={() => setExpandido((valor) => !valor)}
+          >
+            <Text style={styles.lerMais}>{expandido ? 'Mostrar menos' : 'Continuar lendo'}</Text>
+          </Pressable>
+        )}
+
+        {imagemComErro === postagem.imagemUrl && !!postagem.imagemUrl && (
+          <Text style={styles.data}>Não foi possível carregar a imagem.</Text>
+        )}
       </View>
     </View>
   );

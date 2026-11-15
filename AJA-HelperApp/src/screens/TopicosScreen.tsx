@@ -1,41 +1,73 @@
+import { Button, Text } from '@/components/ui';
+import type { ThemeColors } from '@/constants/theme';
+import { useEstilos } from '@/hooks/useEstilos';
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { ActivityIndicator, Button, FlatList, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TopicoCard from '@/components/TopicoCard';
 import { buscarTopicos, demonstrarInteresse, jaDemonstrouInteresse } from '@/services/topicos';
 import { useAuth } from '@/contexts/AuthContext';
 import type { Topico } from '@/types/topico';
 
-const styles = StyleSheet.create({
-  tela: {
-    flex: 1,
-  },
+const criarEstilos = (colors: ThemeColors) =>
+  StyleSheet.create({
+    tela: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  conteudo: {
-    padding: 16,
-  },
+    conteudo: {
+      padding: 18,
+      paddingBottom: 28,
+    },
 
-  cabecalho: {
-    marginBottom: 24,
-  },
+    cabecalho: {
+      marginBottom: 22,
+    },
 
-  aviso: {
-    marginTop: 12,
-    lineHeight: 22,
-  },
+    aviso: {
+      marginTop: 14,
+      lineHeight: 17,
+      fontSize: 11,
+      color: colors.muted,
+    },
 
-  erro: {
-    marginTop: 16,
-    gap: 16,
-  },
+    erro: {
+      marginTop: 16,
+      gap: 16,
+    },
 
-  vazio: {
-    paddingVertical: 16,
-  },
-});
+    vazio: {
+      paddingVertical: 16,
+    },
+
+    eyebrow: {
+      fontSize: 10,
+      fontWeight: '800',
+      letterSpacing: 1.6,
+      color: colors.primary,
+      marginTop: 12,
+    },
+
+    titulo: {
+      fontSize: 28,
+      lineHeight: 35,
+      fontWeight: '800',
+      letterSpacing: -0.8,
+      marginTop: 8,
+    },
+
+    subtitulo: {
+      color: colors.muted,
+      marginTop: 8,
+      fontSize: 13,
+    },
+  });
 
 export default function TopicosScreen() {
+  const styles = useEstilos(criarEstilos);
+
   const { sessao } = useAuth();
 
   const [topicos, setTopicos] = useState<Topico[]>([]);
@@ -54,9 +86,9 @@ export default function TopicosScreen() {
       const resultado = await buscarTopicos(controller.signal);
 
       if (!controller.signal.aborted) {
-        setTopicos(atuais =>
-          resultado.map(topico => {
-            const anterior = atuais.find(item => item.id === topico.id);
+        setTopicos((atuais) =>
+          resultado.map((topico) => {
+            const anterior = atuais.find((item) => item.id === topico.id);
 
             return {
               ...topico,
@@ -67,7 +99,8 @@ export default function TopicosScreen() {
       }
     } catch (error) {
       if (!controller.signal.aborted) {
-        const mensagem = error instanceof Error ? error.message : 'Não foi possível carregar os tópicos.';
+        const mensagem =
+          error instanceof Error ? error.message : 'Não foi possível carregar os tópicos.';
 
         setErro(mensagem);
       }
@@ -103,14 +136,14 @@ export default function TopicosScreen() {
       return;
     }
 
-    setCurtindo(atuais => [...new Set([...atuais, topicoId])]);
-    setErrosInteresse(atuais => ({ ...atuais, [topicoId]: '' }));
+    setCurtindo((atuais) => [...new Set([...atuais, topicoId])]);
+    setErrosInteresse((atuais) => ({ ...atuais, [topicoId]: '' }));
 
     try {
       const resultado = await demonstrarInteresse(topicoId, sessao.usuario.id, sessao.token);
 
-      setTopicos(atuais =>
-        atuais.map(topico => {
+      setTopicos((atuais) =>
+        atuais.map((topico) => {
           if (topico.id !== topicoId) {
             return topico;
           }
@@ -122,11 +155,12 @@ export default function TopicosScreen() {
         }),
       );
     } catch (error) {
-      const mensagem = error instanceof Error ? error.message : 'Não foi possível registrar seu interesse.';
+      const mensagem =
+        error instanceof Error ? error.message : 'Não foi possível registrar seu interesse.';
 
-      setErrosInteresse(atuais => ({ ...atuais, [topicoId]: mensagem }));
+      setErrosInteresse((atuais) => ({ ...atuais, [topicoId]: mensagem }));
     } finally {
-      setCurtindo(atuais => atuais.filter(id => id !== topicoId));
+      setCurtindo((atuais) => atuais.filter((id) => id !== topicoId));
     }
   }
 
@@ -134,10 +168,11 @@ export default function TopicosScreen() {
     <SafeAreaView edges={['left', 'right']} style={styles.tela}>
       <FlatList
         data={topicos}
-        keyExtractor={topico => String(topico.id)}
-        renderItem={({ item }) => (
+        keyExtractor={(topico) => String(topico.id)}
+        renderItem={({ item, index }) => (
           <TopicoCard
             topico={item}
+            posicao={index + 1}
             curtido={!!sessao && jaDemonstrouInteresse(sessao.usuario.id, item.id)}
             enviando={curtindo.includes(item.id)}
             erro={errosInteresse[item.id]}
@@ -149,10 +184,17 @@ export default function TopicosScreen() {
         onRefresh={atualizar}
         ListHeaderComponent={
           <View style={styles.cabecalho}>
-            <Text accessibilityRole="header">Conversas do Parque Doroteia</Text>
+            <Text style={styles.eyebrow}>SEU BAIRRO. SUAS IDEIAS.</Text>
+
+            <Text accessibilityRole="header" style={styles.titulo}>
+              O que está em pauta
+            </Text>
+
+            <Text style={styles.subtitulo}>Conversas que podem transformar o Parque Doroteia.</Text>
 
             <Text style={styles.aviso}>
-              Os perfis institucionais, convites e propostas iniciais são fictícios para demonstrar o AJA.
+              Os perfis institucionais, convites e propostas iniciais são fictícios para demonstrar
+              o AJA.
             </Text>
 
             {erro && (

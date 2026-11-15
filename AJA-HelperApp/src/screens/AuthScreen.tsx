@@ -1,6 +1,9 @@
+import { Button, Text, TextInput } from '@/components/ui';
+import type { ThemeColors } from '@/constants/theme';
+import { useEstilos } from '@/hooks/useEstilos';
 import { useState } from 'react';
 import { Link } from 'expo-router';
-import { ActivityIndicator, Button, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -8,41 +11,103 @@ type Props = {
   modo: 'login' | 'cadastro';
 };
 
-const styles = StyleSheet.create({
-  tela: {
-    flex: 1,
-  },
+const criarEstilos = (colors: ThemeColors) =>
+  StyleSheet.create({
+    tela: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  conteudo: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    padding: 16,
-  },
+    conteudo: {
+      flexGrow: 1,
+      justifyContent: 'flex-start',
+      padding: 24,
+      paddingBottom: 40,
+      maxWidth: 500,
+      width: '100%',
+      alignSelf: 'center',
+    },
 
-  campos: {
-    gap: 16,
-    marginTop: 20,
-  },
+    campos: {
+      gap: 16,
+      marginTop: 20,
+    },
 
-  input: {
-    borderWidth: 1,
-    padding: 12,
-  },
+    input: {
+      borderWidth: 1,
+      padding: 12,
+      borderColor: colors.line,
+      borderRadius: 14,
+      backgroundColor: colors.surface,
+    },
 
-  mensagem: {
-    marginTop: 16,
-  },
+    mensagem: {
+      marginTop: 14,
+      color: colors.danger,
+    },
 
-  acoes: {
-    marginTop: 20,
-  },
+    acoes: {
+      marginTop: 20,
+    },
 
-  link: {
-    paddingVertical: 20,
-  },
-});
+    link: {
+      paddingVertical: 20,
+      color: colors.primary,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+
+    hero: {
+      backgroundColor: colors.brandBackground,
+      borderRadius: 26,
+      padding: 26,
+      marginBottom: 32,
+      gap: 18,
+    },
+
+    logo: {
+      width: 95,
+      height: 42,
+    },
+
+    heroTitulo: {
+      fontSize: 29,
+      lineHeight: 35,
+      fontWeight: '800',
+      color: colors.onBrand,
+      letterSpacing: -1,
+    },
+
+    heroLegenda: {
+      color: colors.onBrand,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+
+    eyebrow: {
+      color: colors.primary,
+      fontSize: 10,
+      fontWeight: '800',
+      letterSpacing: 1.8,
+      marginBottom: 10,
+    },
+
+    titulo: {
+      fontSize: 25,
+      fontWeight: '800',
+      lineHeight: 32,
+      letterSpacing: -0.7,
+    },
+
+    subtitulo: {
+      color: colors.muted,
+      marginTop: 8,
+    },
+  });
 
 export default function AuthScreen({ modo }: Props) {
+  const styles = useEstilos(criarEstilos);
+
   const { entrar } = useAuth();
 
   const [nome, setNome] = useState('');
@@ -99,9 +164,36 @@ export default function AuthScreen({ modo }: Props) {
 
   return (
     <SafeAreaView style={styles.tela}>
-      <KeyboardAvoidingView style={styles.tela} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView
+        style={styles.tela}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         <ScrollView contentContainerStyle={styles.conteudo} keyboardShouldPersistTaps="handled">
-          <Text accessibilityRole="header">{cadastrando ? 'Crie sua conta no AJA' : 'Entrar no AJA'}</Text>
+          <View style={styles.hero}>
+            <Image
+              source={require('../../assets/aja-logo.jpeg')}
+              style={styles.logo}
+              accessibilityLabel="AJA"
+            />
+
+            <Text style={styles.heroTitulo}>O seu bairro começa com você.</Text>
+
+            <Text style={styles.heroLegenda}>
+              Conecte ideias. Compartilhe histórias. Faça a diferença.
+            </Text>
+          </View>
+
+          <Text style={styles.eyebrow}>BEM-VINDO À COMUNIDADE</Text>
+
+          <Text accessibilityRole="header" style={styles.titulo}>
+            {cadastrando ? 'Vamos fazer acontecer?' : 'Bom ter você de volta.'}
+          </Text>
+
+          <Text style={styles.subtitulo}>
+            {cadastrando
+              ? 'Crie sua conta e participe das mudanças.'
+              : 'Entre para acompanhar o que move o seu bairro.'}
+          </Text>
 
           <View style={styles.campos}>
             {cadastrando && (
@@ -111,7 +203,7 @@ export default function AuthScreen({ modo }: Props) {
                 accessibilityState={{ disabled: enviando }}
                 placeholder="Nome"
                 value={nome}
-                onChangeText={valor => {
+                onChangeText={(valor) => {
                   setNome(valor);
                   setErro(null);
                 }}
@@ -127,7 +219,7 @@ export default function AuthScreen({ modo }: Props) {
               accessibilityState={{ disabled: enviando }}
               placeholder="E-mail"
               value={email}
-              onChangeText={valor => {
+              onChangeText={(valor) => {
                 setEmail(valor);
                 setErro(null);
               }}
@@ -149,7 +241,7 @@ export default function AuthScreen({ modo }: Props) {
               accessibilityState={{ disabled: enviando }}
               placeholder="Senha"
               value={senha}
-              onChangeText={valor => {
+              onChangeText={(valor) => {
                 setSenha(valor);
                 setErro(null);
               }}
@@ -163,7 +255,11 @@ export default function AuthScreen({ modo }: Props) {
           </View>
 
           {erro && (
-            <Text accessibilityRole="alert" accessibilityLiveRegion="polite" style={styles.mensagem}>
+            <Text
+              accessibilityRole="alert"
+              accessibilityLiveRegion="polite"
+              style={styles.mensagem}
+            >
               {erro}
             </Text>
           )}
@@ -190,7 +286,9 @@ export default function AuthScreen({ modo }: Props) {
             href={cadastrando ? '/login' : '/cadastro'}
             accessibilityRole="link"
             accessibilityLabel={
-              cadastrando ? 'Já tenho conta. Ir para login' : 'Ainda não tenho conta. Ir para cadastro'
+              cadastrando
+                ? 'Já tenho conta. Ir para login'
+                : 'Ainda não tenho conta. Ir para cadastro'
             }
             style={styles.link}
           >

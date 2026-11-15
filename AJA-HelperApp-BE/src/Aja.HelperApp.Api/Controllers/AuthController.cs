@@ -39,7 +39,7 @@ public sealed class AuthController(AjaDbContext database, IPasswordHasher<Usuari
         {
             await database.SaveChangesAsync(cancellationToken);
         }
-        catch (DbUpdateException exception)when (exception.InnerException is MySqlException { Number: 1062 })
+        catch (DbUpdateException exception) when (exception.InnerException is MySqlException { Number: 1062 })
         {
             return Conflict(new { mensagem = "Este e-mail já está cadastrado." });
         }

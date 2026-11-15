@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type PropsWithChildren } from 'react';
 import { autenticar, validarSessao } from '@/services/autenticacao';
 import { ApiError } from '@/services/http';
 import type { Sessao } from '@/types/sessao';
@@ -13,6 +13,8 @@ type DadosAcesso = {
 type Auth = {
   sessao: Sessao | null;
   carregando: boolean;
+  entrando: boolean;
+  concluirEntrada: () => void;
   erroRestauracao: boolean;
   tentarRestaurar: () => void;
   entrar: (modo: 'login' | 'cadastro', dados: DadosAcesso) => Promise<void>;
@@ -28,6 +30,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [carregando, setCarregando] = useState(true);
   const [erroRestauracao, setErroRestauracao] = useState(false);
   const [tentativa, setTentativa] = useState(0);
+  const [entrando, setEntrando] = useState(false);
+  const concluirEntrada = useCallback(() => setEntrando(false), []);
 
   useEffect(() => {
     let ativo = true;
@@ -97,6 +101,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
     await AsyncStorage.setItem(CHAVE, JSON.stringify(nova));
 
+    setEntrando(true);
     setSessao(nova);
     setErroRestauracao(false);
   }
@@ -105,6 +110,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     await AsyncStorage.removeItem(CHAVE);
 
     setSessao(null);
+    setEntrando(false);
     setErroRestauracao(false);
   }
 
@@ -119,6 +125,8 @@ export function AuthProvider({ children }: PropsWithChildren) {
       value={{
         sessao,
         carregando,
+        entrando,
+        concluirEntrada,
         erroRestauracao,
         entrar,
         sair,

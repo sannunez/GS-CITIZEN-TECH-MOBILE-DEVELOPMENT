@@ -1,10 +1,12 @@
 using Aja.HelperApp.Api.Contracts;
 using Aja.HelperApp.Api.Data;
+using Aja.HelperApp.Api.Data.Queries;
 using Aja.HelperApp.Api.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
+using System.ComponentModel.DataAnnotations;
 
 namespace Aja.HelperApp.Api.Controllers;
 
@@ -26,6 +28,40 @@ public sealed class UsuariosController(AjaDbContext database) : ControllerBase
         var usuario = await database.Usuarios.AsNoTracking().SingleOrDefaultAsync(usuario => usuario.Id == id, cancellationToken);
 
         return usuario is null ? NotFound() : Ok(usuario.ToResponse());
+    }
+
+    [HttpGet("{id:long}/postagens")]
+    public async Task<ActionResult<PostagensFeedResponse>> Postagens(long id,
+        [FromQuery, Range(1, 20)] int limite = 10,
+        [FromQuery, Range(1, long.MaxValue)] long? antesDeId = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (!await database.Usuarios.AnyAsync(usuario => usuario.Id == id, cancellationToken))
+        {
+            return NotFound(new { mensagem = "Usuário não encontrado." });
+        }
+
+        var resultados = await PostagemFeedQuery.Criar(database, antesDeId, id)
+            .Take(limite + 1)
+            .ToListAsync(cancellationToken);
+        var itens = resultados.Take(limite).ToArray();
+        var temMais = resultados.Count > limite;
+
+        return Ok(new PostagensFeedResponse(itens, temMais, temMais ? itens[^1].Id : null));
+    }
+
+    [HttpGet("{id:long}/topicos")]
+    public async Task<ActionResult<IReadOnlyList<TopicoResponse>>> Topicos(long id, CancellationToken cancellationToken)
+    {
+        if (!await database.Usuarios.AnyAsync(usuario => usuario.Id == id, cancellationToken))
+        {
+            return NotFound(new { mensagem = "Usuário não encontrado." });
+        }
+
+        var topicos = await TopicoQuery.Criar(database, usuarioId: id)
+            .ToListAsync(cancellationToken);
+
+        return Ok(topicos);
     }
 
     [HttpPut("{id:long}")]

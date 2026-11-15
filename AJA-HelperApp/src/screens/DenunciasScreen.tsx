@@ -1,6 +1,10 @@
+import { Button, Text } from '@/components/ui';
+import type { ThemeColors } from '@/constants/theme';
+import { useEstilos } from '@/hooks/useEstilos';
+import { usePreferencias } from '@/contexts/PreferenciasContext';
 import { useCallback, useRef, useState } from 'react';
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { ActivityIndicator, Button, FlatList, Modal, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Modal, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/contexts/AuthContext';
 import { alterarSituacaoDenuncia, buscarDenuncias, excluirDenuncia } from '@/services/denuncias';
@@ -9,73 +13,85 @@ import CarrosselDenuncia from '@/components/CarrosselDenuncia';
 
 type Acao = { denuncia: Denuncia; tipo: 'excluir' | 'situacao' };
 
-const styles = StyleSheet.create({
-  tela: {
-    flex: 1,
-  },
+const criarEstilos = (colors: ThemeColors) =>
+  StyleSheet.create({
+    tela: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
 
-  lista: {
-    padding: 16,
-  },
+    lista: {
+      padding: 16,
+    },
 
-  cabecalho: {
-    gap: 14,
-    marginBottom: 20,
-  },
+    cabecalho: {
+      gap: 14,
+      marginBottom: 20,
+    },
 
-  titulo: {
-    fontSize: 22,
-    fontWeight: '600',
-  },
+    titulo: {
+      fontSize: 26,
+      fontWeight: '800',
+      lineHeight: 34,
+      letterSpacing: -0.6,
+    },
 
-  botoes: {
-    flexDirection: 'row',
-    gap: 16,
-  },
+    botoes: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 16,
+    },
 
-  card: {
-    backgroundColor: '#fff',
-    borderColor: '#bcc7cf',
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    gap: 8,
-  },
+    card: {
+      backgroundColor: colors.surface,
+      borderColor: colors.line,
+      borderWidth: 1,
+      borderRadius: 20,
+      padding: 20,
+      marginBottom: 20,
+      gap: 8,
+    },
 
-  status: {
-    fontWeight: '700',
-    color: '#254f66',
-  },
+    status: {
+      fontWeight: '700',
+      color: colors.green,
+      backgroundColor: colors.softGreen,
+      padding: 10,
+      borderRadius: 10,
+      fontSize: 12,
+    },
 
-  relato: {
-    lineHeight: 23,
-  },
+    relato: {
+      lineHeight: 23,
+    },
 
-  acoes: {
-    gap: 12,
-    marginTop: 12,
-  },
+    acoes: {
+      gap: 12,
+      marginTop: 12,
+    },
 
-  fundo: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    padding: 24,
-  },
+    fundo: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.5)',
+      justifyContent: 'center',
+      padding: 24,
+    },
 
-  modal: {
-    backgroundColor: '#fff',
-    padding: 24,
-    gap: 20,
-    borderRadius: 12,
-    maxWidth: 500,
-    width: '100%',
-    alignSelf: 'center',
-  },
-});
+    modal: {
+      backgroundColor: colors.surface,
+      padding: 24,
+      gap: 20,
+      borderRadius: 24,
+      maxWidth: 500,
+      width: '100%',
+      alignSelf: 'center',
+    },
+  });
 
 export default function DenunciasScreen() {
+  const styles = useEstilos(criarEstilos);
+  const { reduzirMovimento } = usePreferencias();
+
   const { minhas: filtroInicial } = useLocalSearchParams<{ minhas?: string }>();
   const { sessao } = useAuth();
   const token = sessao?.token;
@@ -104,7 +120,9 @@ export default function DenunciasScreen() {
         if (!controller.signal.aborted) setItens(resultado);
       } catch (error) {
         if (!controller.signal.aborted)
-          setErro(error instanceof Error ? error.message : 'Não foi possível carregar as denúncias.');
+          setErro(
+            error instanceof Error ? error.message : 'Não foi possível carregar as denúncias.',
+          );
       } finally {
         if (!controller.signal.aborted) setCarregando(false);
       }
@@ -145,11 +163,15 @@ export default function DenunciasScreen() {
     try {
       if (acao.tipo === 'excluir') {
         await excluirDenuncia(acao.denuncia.id, token);
-        setItens(atuais => atuais.filter(d => d.id !== acao.denuncia.id));
+        setItens((atuais) => atuais.filter((d) => d.id !== acao.denuncia.id));
       } else {
-        const resultado = await alterarSituacaoDenuncia(acao.denuncia.id, !acao.denuncia.solucionado, token);
+        const resultado = await alterarSituacaoDenuncia(
+          acao.denuncia.id,
+          !acao.denuncia.solucionado,
+          token,
+        );
 
-        setItens(atuais => atuais.map(d => (d.id === resultado.id ? resultado : d)));
+        setItens((atuais) => atuais.map((d) => (d.id === resultado.id ? resultado : d)));
       }
 
       setAcao(null);
@@ -170,7 +192,7 @@ export default function DenunciasScreen() {
     <SafeAreaView edges={['left', 'right', 'bottom']} style={styles.tela}>
       <FlatList
         data={itens}
-        keyExtractor={d => String(d.id)}
+        keyExtractor={(d) => String(d.id)}
         contentContainerStyle={styles.lista}
         accessibilityElementsHidden={!!acao}
         importantForAccessibility={acao ? 'no-hide-descendants' : 'auto'}
@@ -202,7 +224,11 @@ export default function DenunciasScreen() {
               />
             </View>
 
-            <Button title="Nova denúncia" disabled={salvando} onPress={() => router.push('/denuncia-form')} />
+            <Button
+              title="Nova denúncia"
+              disabled={salvando}
+              onPress={() => router.push('/denuncia-form')}
+            />
 
             {erro && (
               <>
@@ -257,7 +283,9 @@ export default function DenunciasScreen() {
                 <Button
                   title="Editar denúncia"
                   disabled={salvando || carregando}
-                  onPress={() => router.push({ pathname: '/denuncia-form', params: { id: String(item.id) } })}
+                  onPress={() =>
+                    router.push({ pathname: '/denuncia-form', params: { id: String(item.id) } })
+                  }
                 />
 
                 <Button
@@ -280,7 +308,7 @@ export default function DenunciasScreen() {
       <Modal
         visible={!!acao}
         transparent
-        animationType="fade"
+        animationType={reduzirMovimento ? 'none' : 'fade'}
         onRequestClose={() => {
           if (!ocupado.current) setAcao(null);
         }}

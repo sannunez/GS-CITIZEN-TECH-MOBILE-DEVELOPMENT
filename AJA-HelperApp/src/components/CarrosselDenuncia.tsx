@@ -1,35 +1,44 @@
+import { Button, Text } from '@/components/ui';
+import type { ThemeColors } from '@/constants/theme';
+import { useEstilos } from '@/hooks/useEstilos';
+import { usePreferencias } from '@/contexts/PreferenciasContext';
 import { useRef, useState, type ComponentRef } from 'react';
-import { ActivityIndicator, Button, Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Image, ScrollView, StyleSheet, View } from 'react-native';
 import { imagensDemonstracao, separarImagens } from '@/utils/denuncias';
 
-const styles = StyleSheet.create({
-  container: {
-    marginVertical: 12,
-    gap: 8,
-  },
+const criarEstilos = (colors: ThemeColors) =>
+  StyleSheet.create({
+    container: {
+      marginVertical: 12,
+      gap: 8,
+    },
 
-  foto: {
-    height: 210,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#edf1f4',
-  },
+    foto: {
+      height: 210,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.softBlue,
+      borderRadius: 16,
+      overflow: 'hidden',
+    },
 
-  imagem: {
-    width: '100%',
-    height: '100%',
-  },
+    imagem: {
+      width: '100%',
+      height: '100%',
+    },
 
-  contador: {
-    textAlign: 'center',
-  },
+    contador: {
+      textAlign: 'center',
+      fontSize: 12,
+      color: colors.muted,
+    },
 
-  controles: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-});
+    controles: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 12,
+    },
+  });
 
 function Foto({
   url,
@@ -42,6 +51,8 @@ function Foto({
   total: number;
   largura: number;
 }) {
+  const styles = useEstilos(criarEstilos);
+
   const [falhou, setFalhou] = useState(false);
   const [carregando, setCarregando] = useState(true);
 
@@ -80,6 +91,9 @@ export default function CarrosselDenuncia({ imagensUrls }: { imagensUrls: string
 }
 
 function Galeria({ imagensUrls }: { imagensUrls: string | null }) {
+  const styles = useEstilos(criarEstilos);
+  const { reduzirMovimento } = usePreferencias();
+
   const urls = separarImagens(imagensUrls);
 
   const [largura, setLargura] = useState(0);
@@ -91,11 +105,11 @@ function Galeria({ imagensUrls }: { imagensUrls: string | null }) {
 
   function ir(novo: number) {
     setIndice(novo);
-    scroll.current?.scrollTo({ x: novo * largura, animated: true });
+    scroll.current?.scrollTo({ x: novo * largura, animated: !reduzirMovimento });
   }
 
   return (
-    <View onLayout={e => setLargura(e.nativeEvent.layout.width)} style={styles.container}>
+    <View onLayout={(e) => setLargura(e.nativeEvent.layout.width)} style={styles.container}>
       {largura > 0 && (
         <ScrollView
           ref={scroll}
@@ -103,9 +117,12 @@ function Galeria({ imagensUrls }: { imagensUrls: string | null }) {
           pagingEnabled
           showsHorizontalScrollIndicator
           accessibilityLabel="Fotos da denúncia. Deslize horizontalmente ou use os botões."
-          onMomentumScrollEnd={e =>
+          onMomentumScrollEnd={(e) =>
             setIndice(
-              Math.min(urls.length - 1, Math.max(0, Math.round(e.nativeEvent.contentOffset.x / largura))),
+              Math.min(
+                urls.length - 1,
+                Math.max(0, Math.round(e.nativeEvent.contentOffset.x / largura)),
+              ),
             )
           }
         >
@@ -137,7 +154,7 @@ function Galeria({ imagensUrls }: { imagensUrls: string | null }) {
         </View>
       )}
 
-      {urls.some(url => imagensDemonstracao.includes(url)) && (
+      {urls.some((url) => imagensDemonstracao.includes(url)) && (
         <Text>Fotos de demonstração: não representam o local denunciado.</Text>
       )}
     </View>
