@@ -97,6 +97,7 @@ As versões completas das dependências estão nos arquivos `package.json`, `pac
 - Login autenticado pela API.
 - Validação de campos obrigatórios, formato de e-mail e tamanho mínimo da senha no cadastro.
 - Mensagens para credenciais inválidas e falhas de conexão.
+- Mensagem “Usuário inexistente” quando o e-mail informado não estiver cadastrado.
 - Persistência e validação da sessão ao reabrir o aplicativo.
 - Transição com a identidade visual do AJA após a entrada.
 
@@ -381,6 +382,6 @@ Capturas do protótipo em execução no emulador Android. O controle sobreposto 
 
 ## Vídeo de demonstração
 
-Link do vídeo: pendente de inclusão antes da entrega.
+[Assistir ao vídeo de demonstração do AJA](https://www.youtube.com/watch?v=F-Lhitv8Dos)
 
 O vídeo de Mobile deve ter até três minutos e mostrar o aplicativo funcionando. Sugestão de roteiro: apresentar o problema e o público, entrar no app, consultar o feed, cadastrar uma denúncia usando o ViaCEP, demonstrar a persistência e mostrar as preferências de acessibilidade.

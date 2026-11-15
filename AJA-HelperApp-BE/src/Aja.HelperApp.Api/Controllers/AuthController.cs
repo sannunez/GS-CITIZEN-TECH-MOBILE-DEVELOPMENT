@@ -53,7 +53,12 @@ public sealed class AuthController(AjaDbContext database, IPasswordHasher<Usuari
         var email = request.Email.Trim().ToLowerInvariant();
         var usuario = await database.Usuarios.SingleOrDefaultAsync(usuario => usuario.Email == email, cancellationToken);
 
-        if (usuario is null || string.IsNullOrEmpty(usuario.SenhaHash))
+        if (usuario is null)
+        {
+            return NotFound(new { mensagem = "Usuário inexistente" });
+        }
+
+        if (string.IsNullOrEmpty(usuario.SenhaHash))
         {
             return Unauthorized(new { mensagem = "E-mail ou senha inválidos." });
         }
